@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, SafeAreaView, ScrollView, Dimensions } from 'react-native';
+import { View, Text, TextInput, Pressable, ScrollView, Dimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/stores/authStore';
 import { Colors, SkillCategories } from '@/constants/theme';
@@ -49,7 +50,7 @@ export default function NGORegisterScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.surface }}>
+    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: colors.surface }}>
       <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 140 }}>
         {/* Header */}
         <View style={{ marginBottom: 24 }}>

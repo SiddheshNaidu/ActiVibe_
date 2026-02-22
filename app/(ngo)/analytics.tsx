@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, SafeAreaView, Image, Pressable, Dimensions } from 'react-native';
+import { View, Text, ScrollView, Image, Pressable, Dimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '@/stores/authStore';
 import { Colors } from '@/constants/theme';
 import {
@@ -26,7 +27,7 @@ export default function AnalyticsScreen() {
   ];
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.surface }}>
+    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: colors.surface }}>
       {/* Header */}
       <View style={{
         paddingHorizontal: 20, paddingVertical: 16,
@@ -63,7 +64,7 @@ export default function AnalyticsScreen() {
               padding: 16, overflow: 'hidden',
               shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.06, shadowRadius: 8, elevation: 2,
-              borderWidth: 1, borderColor: colors.border,
+              borderWidth: 1, borderColor: colors.glassBorder,
             }}>
               <View style={{
                 width: 38, height: 38, borderRadius: 12,
@@ -166,7 +167,7 @@ export default function AnalyticsScreen() {
         {SEED_ROLE_FILL.map((role, i) => (
           <View key={i} style={{
             backgroundColor: colors.card, borderRadius: 16, padding: 14, marginBottom: 10,
-            borderWidth: 1, borderColor: colors.border,
+            borderWidth: 1, borderColor: colors.glassBorder,
           }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
               <View style={{ flex: 1 }}>
@@ -205,7 +206,7 @@ export default function AnalyticsScreen() {
         </Text>
         <View style={{
           backgroundColor: colors.card, borderRadius: 18, padding: 16,
-          borderWidth: 1, borderColor: colors.border,
+          borderWidth: 1, borderColor: colors.glassBorder,
         }}>
           <View style={{
             flexDirection: 'row', alignItems: 'flex-end', height: 120,

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  View, Text, Pressable, SafeAreaView, Animated, Dimensions, ScrollView,
+  View, Text, Pressable, Animated, Dimensions, ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/stores/authStore';
 import { useActiveEventStore } from '@/stores/activeEventStore';
@@ -137,22 +138,45 @@ export default function MapScreen() {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.surface }}>
-      {/* Simulated Map Area */}
-      <View style={{ flex: 1, backgroundColor: darkMode ? '#1a1a2e' : '#e8f5e9' }}>
+    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: colors.surface }}>
+      {/* Styled Map Area */}
+      <View style={{ flex: 1, backgroundColor: '#f0f4f0' }}>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          {/* Grid pattern */}
-          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.12 }}>
-            {Array.from({ length: 12 }).map((_, i) => (
+          {/* Styled map background — roads, parks, water */}
+          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+            {/* Water feature */}
+            <View style={{
+              position: 'absolute', top: '5%', right: '-10%',
+              width: 220, height: 160, borderRadius: 80,
+              backgroundColor: '#c8dce8', opacity: 0.7,
+              transform: [{ rotate: '-15deg' }],
+            }} />
+            {/* Park areas */}
+            <View style={{
+              position: 'absolute', bottom: '25%', left: '5%',
+              width: 140, height: 100, borderRadius: 20,
+              backgroundColor: '#d8edd8', opacity: 0.8,
+            }} />
+            <View style={{
+              position: 'absolute', top: '15%', left: '15%',
+              width: 80, height: 60, borderRadius: 14,
+              backgroundColor: '#d8edd8', opacity: 0.6,
+            }} />
+            {/* Roads */}
+            {Array.from({ length: 6 }).map((_, i) => (
               <View key={`h-${i}`} style={{
-                position: 'absolute', top: i * 60, left: 0, right: 0,
-                height: 1, backgroundColor: colors.inkMuted,
+                position: 'absolute', top: i * 100 + 40, left: 0, right: 0,
+                height: i % 2 === 0 ? 3 : 2,
+                backgroundColor: i % 2 === 0 ? '#e8e8f0' : '#FFFFFF',
+                opacity: 0.9,
               }} />
             ))}
-            {Array.from({ length: 8 }).map((_, i) => (
+            {Array.from({ length: 5 }).map((_, i) => (
               <View key={`v-${i}`} style={{
-                position: 'absolute', left: i * (width / 7), top: 0, bottom: 0,
-                width: 1, backgroundColor: colors.inkMuted,
+                position: 'absolute', left: i * (width / 4) + 30, top: 0, bottom: 0,
+                width: i % 2 === 0 ? 3 : 2,
+                backgroundColor: i % 2 === 0 ? '#e8e8f0' : '#FFFFFF',
+                opacity: 0.8,
               }} />
             ))}
           </View>
@@ -184,22 +208,20 @@ export default function MapScreen() {
             </Text>
           </Animated.View>
 
-          {/* User Location Dot */}
-          {(status === 'checked-in' || status === 'left-zone') && (
-            <Animated.View style={{
-              position: 'absolute',
-              top: status === 'checked-in' ? '48%' : '30%',
-              left: status === 'checked-in' ? '52%' : '25%',
-              transform: [{ scale: userDotPulse }],
-            }}>
-              <View style={{
-                width: 22, height: 22, borderRadius: 11,
-                backgroundColor: '#3B82F6', borderWidth: 3, borderColor: '#FFF',
-                shadowColor: '#3B82F6', shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.6, shadowRadius: 6,
-              }} />
-            </Animated.View>
-          )}
+          {/* User Location Dot — always visible */}
+          <Animated.View style={{
+            position: 'absolute',
+            top: status === 'checked-in' ? '48%' : status === 'left-zone' ? '30%' : '68%',
+            left: status === 'checked-in' ? '52%' : status === 'left-zone' ? '25%' : '60%',
+            transform: [{ scale: userDotPulse }],
+          }}>
+            <View style={{
+              width: 22, height: 22, borderRadius: 11,
+              backgroundColor: '#2563EB', borderWidth: 3, borderColor: '#FFF',
+              shadowColor: '#2563EB', shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.6, shadowRadius: 6, elevation: 5,
+            }} />
+          </Animated.View>
 
           {/* Distance Label */}
           {status === 'outside' && (
@@ -235,7 +257,7 @@ export default function MapScreen() {
         paddingHorizontal: 20, paddingTop: 16, paddingBottom: 34,
         shadowColor: '#000', shadowOffset: { width: 0, height: -6 },
         shadowOpacity: 0.1, shadowRadius: 24,
-        borderWidth: 1, borderBottomWidth: 0, borderColor: colors.border,
+        borderWidth: 1, borderBottomWidth: 0, borderColor: colors.glassBorder,
       }}>
         <View style={{
           width: 36, height: 4, borderRadius: 2,
@@ -307,7 +329,19 @@ export default function MapScreen() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 10 }}>
           <View style={{ flexDirection: 'row', gap: 10 }}>
             {!activeDrive && (
-              <DevButton onPress={handleSimulateEntry} label="Enter Zone" emoji="📍" bgColor="#D1FAE5" textColor="#059669" />
+              <Pressable
+                onPress={handleSimulateEntry}
+                style={({ pressed }) => ({
+                  height: 48, borderRadius: 12, borderWidth: 2, borderColor: '#059669',
+                  alignItems: 'center', justifyContent: 'center',
+                  flex: 1,
+                  transform: [{ scale: pressed ? 0.96 : 1 }],
+                })}
+              >
+                <Text style={{ fontSize: 15, fontWeight: '600', color: '#059669' }}>
+                  📍 Simulate Entry (DEV)
+                </Text>
+              </Pressable>
             )}
 
             {activeDrive && inZone && (

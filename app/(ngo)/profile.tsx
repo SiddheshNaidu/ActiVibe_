@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, ScrollView, SafeAreaView, Pressable, Image, Dimensions } from 'react-native';
+import { View, Text, ScrollView, Pressable, Image, Dimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/stores/authStore';
 import { Colors } from '@/constants/theme';
@@ -18,7 +19,7 @@ export default function NGOProfileScreen() {
   const logout = useAuthStore((s) => s.logout);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.surface }}>
+    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: darkMode ? '#064E3B' : '#059669' }}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <LinearGradient
           colors={darkMode ? ['#064E3B', '#0F0E17'] : ['#059669', '#047857']}
@@ -75,7 +76,7 @@ export default function NGOProfileScreen() {
               <View key={i} style={{
                 width: KPI_WIDTH, backgroundColor: colors.card, borderRadius: 20,
                 padding: 18, alignItems: 'center',
-                borderWidth: 1, borderColor: colors.border,
+                borderWidth: 1, borderColor: colors.glassBorder,
                 shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
                 shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
               }}>

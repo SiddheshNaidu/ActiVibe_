@@ -1,5 +1,5 @@
 // ActiVibe Design System — Token Reference
-// Color theme: Cooler green + lime-yellow off-white
+// Color theme: Green + lime-yellow off-white + Glass UI
 
 export const Colors = {
   light: {
@@ -11,7 +11,9 @@ export const Colors = {
     inkLight: '#3D3A54',
     inkMuted: '#7B78A0',
     surface: '#FEFFF8',
-    card: '#FFFFFF',
+    card: 'rgba(255, 255, 255, 0.72)',
+    cardSolid: '#FFFFFF',
+    glassBorder: 'rgba(255, 255, 255, 0.5)',
     border: '#E4E4F0',
     green: '#059669',
     greenLight: '#D1FAE5',
@@ -34,7 +36,9 @@ export const Colors = {
     inkLight: '#A09ABF',
     inkMuted: '#7B78A0',
     surface: '#0F0E17',
-    card: '#1A1828',
+    card: 'rgba(26, 24, 40, 0.75)',
+    cardSolid: '#1A1828',
+    glassBorder: 'rgba(255, 255, 255, 0.06)',
     border: '#2D2B45',
     green: '#10B981',
     greenLight: '#064E3B',
@@ -47,6 +51,51 @@ export const Colors = {
     gray100: '#1F2937',
     gray200: '#374151',
     gray400: '#6B7280',
+  },
+};
+
+export const GlassStyle = {
+  light: {
+    card: {
+      backgroundColor: 'rgba(255, 255, 255, 0.72)',
+      borderWidth: 1,
+      borderColor: 'rgba(255, 255, 255, 0.5)',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.06,
+      shadowRadius: 16,
+      elevation: 3,
+    },
+    navBar: {
+      backgroundColor: 'rgba(255, 255, 255, 0.85)',
+      borderBottomWidth: 0,
+    },
+    chip: {
+      backgroundColor: 'rgba(255, 255, 255, 0.5)',
+      borderWidth: 1,
+      borderColor: 'rgba(255, 255, 255, 0.6)',
+    },
+  },
+  dark: {
+    card: {
+      backgroundColor: 'rgba(26, 24, 40, 0.75)',
+      borderWidth: 1,
+      borderColor: 'rgba(255, 255, 255, 0.06)',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.15,
+      shadowRadius: 16,
+      elevation: 3,
+    },
+    navBar: {
+      backgroundColor: 'rgba(15, 14, 23, 0.85)',
+      borderBottomWidth: 0,
+    },
+    chip: {
+      backgroundColor: 'rgba(255, 255, 255, 0.06)',
+      borderWidth: 1,
+      borderColor: 'rgba(255, 255, 255, 0.08)',
+    },
   },
 };
 
@@ -80,13 +129,13 @@ export const Radius = {
 export const MinTouch = 48;
 
 export const SkillCategories = [
-  { id: 'environment', label: 'Environment', emoji: '🌱', color: '#059669' },
-  { id: 'education', label: 'Education', emoji: '📚', color: '#3B82F6' },
-  { id: 'health', label: 'Health & Medical', emoji: '🏥', color: '#EF4444' },
-  { id: 'tech', label: 'Tech & IT', emoji: '💻', color: '#8B5CF6' },
-  { id: 'logistics', label: 'Logistics & Ops', emoji: '📦', color: '#F59E0B' },
-  { id: 'media', label: 'Media & Content', emoji: '🎨', color: '#EC4899' },
-  { id: 'community', label: 'Community', emoji: '🤝', color: '#06B6D4' },
+  { id: 'environment', label: 'Environment', emoji: '🌿', color: '#16A34A' },
+  { id: 'education', label: 'Education', emoji: '📚', color: '#2563EB' },
+  { id: 'health', label: 'Health & Medical', emoji: '🏥', color: '#DC2626' },
+  { id: 'tech', label: 'Tech & IT', emoji: '💻', color: '#0891B2' },
+  { id: 'logistics', label: 'Logistics & Ops', emoji: '📦', color: '#EA580C' },
+  { id: 'media', label: 'Media & Content', emoji: '🎨', color: '#DB2777' },
+  { id: 'community', label: 'Community', emoji: '🤝', color: '#CA8A04' },
 ];
 
 export const BadgeTypes = [

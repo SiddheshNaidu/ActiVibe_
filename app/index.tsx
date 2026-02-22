@@ -1,15 +1,16 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View, Text, ScrollView, Pressable, Animated, Dimensions,
-  SafeAreaView, useColorScheme,
+  useColorScheme,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/stores/authStore';
 import { Colors } from '@/constants/theme';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const { width, height } = Dimensions.get('window');
-const CARD_WIDTH = width * 0.75;
+const CARD_WIDTH = 260;
 
 const FEATURE_CARDS = [
   { emoji: '📍', title: 'GPS Auto Check-In', subtitle: 'No manual attendance. Walk in, get verified.', gradient: ['#059669', '#047857'] as const },
@@ -106,7 +107,7 @@ export default function SplashScreen() {
         }}
       />
 
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView edges={['top']} style={{ flex: 1 }}>
         {/* Dark mode toggle */}
         <Pressable
           onPress={toggleDarkMode}
@@ -223,6 +224,16 @@ export default function SplashScreen() {
                 </LinearGradient>
               ))}
             </ScrollView>
+
+            {/* Pagination Dots */}
+            <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 6, marginTop: 12 }}>
+              {FEATURE_CARDS.map((_, i) => (
+                <View key={i} style={{
+                  width: 6, height: 6, borderRadius: 3,
+                  backgroundColor: 'rgba(255,255,255,0.3)',
+                }} />
+              ))}
+            </View>
           </Animated.View>
 
           {/* How It Works */}

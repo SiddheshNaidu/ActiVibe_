@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
-import { View, Text, SafeAreaView, ScrollView, Pressable, Animated, Dimensions, Share } from 'react-native';
+import { View, Text, ScrollView, Pressable, Animated, Dimensions, Share } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/stores/authStore';
 import { Colors } from '@/constants/theme';
@@ -39,7 +40,7 @@ export default function PerformanceCardScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#0F0E17' }}>
+    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: '#0F0E17' }}>
       {/* Close button */}
       <Pressable
         onPress={() => router.back()}

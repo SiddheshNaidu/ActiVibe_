@@ -67,6 +67,7 @@ export interface Endorsement {
   ngoName: string;
   driveName: string;
   date: string;
+  description?: string;
 }
 
 export interface NotificationItem {

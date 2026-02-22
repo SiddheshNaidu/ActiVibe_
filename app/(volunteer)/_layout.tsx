@@ -1,45 +1,54 @@
 import { Tabs } from "expo-router";
-import { Text, View } from "react-native";
+import { Text, View, Platform } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuthStore } from "@/stores/authStore";
 import { useNotifStore } from "@/stores/notifStore";
 import { Colors } from "@/constants/theme";
-
-function TabIcon({ name, focused }: { name: string; focused: boolean }) {
-  const icons: Record<string, string> = {
-    feed: '🏠',
-    map: '📍',
-    profile: '👤',
-    notifications: '🔔',
-  };
-  return (
-    <Text style={{ fontSize: focused ? 22 : 20, opacity: focused ? 1 : 0.5 }}>
-      {icons[name] || '📱'}
-    </Text>
-  );
-}
+import { Ionicons } from "@expo/vector-icons";
+import { BlurView } from "expo-blur";
 
 export default function VolunteerLayout() {
   const darkMode = useAuthStore((s) => s.darkMode);
   const unread = useNotifStore((s) => s.unread);
   const colors = darkMode ? Colors.dark : Colors.light;
+  const insets = useSafeAreaInsets();
 
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
     <Tabs
       screenOptions={{
         headerShown: false,
+        tabBarBackground: () => (
+          <BlurView
+            intensity={90}
+            tint={darkMode ? 'dark' : 'light'}
+            style={{
+              position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+            }}
+          />
+        ),
         tabBarStyle: {
-          backgroundColor: colors.card,
-          borderTopColor: colors.border,
-          borderTopWidth: 1,
-          height: 65,
-          paddingBottom: 8,
-          paddingTop: 8,
+          position: 'absolute',
+          backgroundColor: 'transparent',
+          borderTopWidth: 0,
+          height: 56 + insets.bottom,
+          paddingBottom: insets.bottom,
+          elevation: 0,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.06,
+          shadowRadius: 12,
         },
-        tabBarActiveTintColor: colors.brand,
-        tabBarInactiveTintColor: colors.gray400,
+        tabBarActiveTintColor: '#059669',
+        tabBarInactiveTintColor: '#9CA3AF',
         tabBarLabelStyle: {
           fontSize: 11,
-          fontWeight: '600',
+          fontWeight: '500',
+          marginTop: 4,
+        },
+        tabBarItemStyle: {
+          paddingTop: 8,
         },
       }}
     >
@@ -47,14 +56,26 @@ export default function VolunteerLayout() {
         name="feed"
         options={{
           title: 'Feed',
-          tabBarIcon: ({ focused }) => <TabIcon name="feed" focused={focused} />,
+          tabBarIcon: ({ focused }) => (
+            <Ionicons
+              name={focused ? 'home' : 'home-outline'}
+              size={24}
+              color={focused ? '#059669' : '#9CA3AF'}
+            />
+          ),
         }}
       />
       <Tabs.Screen
         name="map"
         options={{
           title: 'Map',
-          tabBarIcon: ({ focused }) => <TabIcon name="map" focused={focused} />,
+          tabBarIcon: ({ focused }) => (
+            <Ionicons
+              name={focused ? 'location' : 'location-outline'}
+              size={24}
+              color={focused ? '#059669' : '#9CA3AF'}
+            />
+          ),
         }}
       />
       <Tabs.Screen
@@ -63,14 +84,19 @@ export default function VolunteerLayout() {
           title: 'Alerts',
           tabBarIcon: ({ focused }) => (
             <View>
-              <TabIcon name="notifications" focused={focused} />
+              <Ionicons
+                name={focused ? 'notifications' : 'notifications-outline'}
+                size={24}
+                color={focused ? '#059669' : '#9CA3AF'}
+              />
               {unread > 0 && (
                 <View style={{
                   position: 'absolute', top: -4, right: -8,
                   backgroundColor: '#DC2626', borderRadius: 8,
                   minWidth: 16, height: 16, alignItems: 'center', justifyContent: 'center',
+                  zIndex: 10,
                 }}>
-                  <Text style={{ color: '#FFF', fontSize: 9, fontWeight: '700' }}>{unread}</Text>
+                  <Text style={{ color: '#FFF', fontSize: 9, fontWeight: '800' }}>{unread}</Text>
                 </View>
               )}
             </View>
@@ -81,9 +107,16 @@ export default function VolunteerLayout() {
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ focused }) => <TabIcon name="profile" focused={focused} />,
+          tabBarIcon: ({ focused }) => (
+            <Ionicons
+              name={focused ? 'person' : 'person-outline'}
+              size={24}
+              color={focused ? '#059669' : '#9CA3AF'}
+            />
+          ),
         }}
       />
     </Tabs>
+    </GestureHandlerRootView>
   );
 }

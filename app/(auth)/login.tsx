@@ -1,14 +1,92 @@
 import React, { useState } from 'react';
 import {
-  View, Text, TextInput, Pressable, SafeAreaView, ScrollView,
+  View, Text, TextInput, Pressable, ScrollView,
   KeyboardAvoidingView, Platform, Dimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/stores/authStore';
 import { Colors } from '@/constants/theme';
 import { LinearGradient } from 'expo-linear-gradient';
+import Animated, {
+  useSharedValue, useAnimatedStyle, withTiming, Easing,
+} from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
+
+/* ─── Google G Logo (inline SVG-style rendered with Views) ─── */
+function GoogleGIcon() {
+  return (
+    <View style={{ width: 20, height: 20, alignItems: 'center', justifyContent: 'center' }}>
+      <Text style={{ fontSize: 18, fontWeight: '700', color: '#4285F4' }}>G</Text>
+    </View>
+  );
+}
+
+/* ─── Animated Segmented Control ─── */
+function RoleSelector({
+  role,
+  onSelect,
+  colors,
+}: {
+  role: 'volunteer' | 'ngo';
+  onSelect: (r: 'volunteer' | 'ngo') => void;
+  colors: typeof Colors.light;
+}) {
+  const translateX = useSharedValue(role === 'volunteer' ? 0 : 1);
+
+  const pillStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: withTiming(translateX.value * ((width - 48 - 8 - 8) / 2), {
+      duration: 200,
+      easing: Easing.bezier(0.4, 0, 0.2, 1),
+    }) }],
+  }));
+
+  const handleSelect = (r: 'volunteer' | 'ngo') => {
+    translateX.value = r === 'volunteer' ? 0 : 1;
+    onSelect(r);
+  };
+
+  const pillWidth = (width - 48 - 8 - 8) / 2;
+
+  return (
+    <View style={{
+      backgroundColor: '#F0F0F0', borderRadius: 999, padding: 4,
+      marginBottom: 24, position: 'relative',
+    }}>
+      {/* Animated pill background */}
+      <Animated.View style={[{
+        position: 'absolute', top: 4, left: 4,
+        width: pillWidth, height: 44, borderRadius: 999,
+        backgroundColor: '#059669',
+        shadowColor: '#059669', shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3, shadowRadius: 6, elevation: 3,
+      }, pillStyle]} />
+
+      <View style={{ flexDirection: 'row' }}>
+        {(['volunteer', 'ngo'] as const).map((r) => (
+          <Pressable
+            key={r}
+            onPress={() => handleSelect(r)}
+            style={{
+              flex: 1, height: 44, borderRadius: 999,
+              alignItems: 'center', justifyContent: 'center',
+              zIndex: 1,
+            }}
+          >
+            <Text style={{
+              fontSize: 14,
+              fontWeight: role === r ? '600' : '400',
+              color: role === r ? '#FFFFFF' : '#7B78A0',
+            }}>
+              {r === 'volunteer' ? '🧑‍🤝‍🧑 Volunteer' : '🏢 NGO'}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+    </View>
+  );
+}
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -43,7 +121,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.surface }}>
+    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: colors.surface }}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -69,55 +147,28 @@ export default function LoginScreen() {
           <View style={{
             backgroundColor: colors.card, borderRadius: 24,
             padding: 24, shadowColor: '#000',
-            shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08,
-            shadowRadius: 16, elevation: 4,
-            borderWidth: 1, borderColor: colors.border,
+            shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.1,
+            shadowRadius: 20, elevation: 5,
+            borderWidth: 1, borderColor: colors.glassBorder,
           }}>
             {/* Role Selector */}
             <Text style={{ fontSize: 13, fontWeight: '700', color: colors.inkLight, marginBottom: 8 }}>
               I am a…
             </Text>
-            <View style={{
-              flexDirection: 'row', backgroundColor: colors.gray100,
-              borderRadius: 14, padding: 4, marginBottom: 24,
-            }}>
-              {(['volunteer', 'ngo'] as const).map((r) => (
-                <Pressable
-                  key={r}
-                  onPress={() => setRole(r)}
-                  style={({ pressed }) => ({
-                    flex: 1, height: 44, borderRadius: 12,
-                    backgroundColor: role === r ? colors.brand : 'transparent',
-                    alignItems: 'center', justifyContent: 'center',
-                    transform: [{ scale: pressed ? 0.97 : 1 }],
-                    shadowColor: role === r ? colors.brand : 'transparent',
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: role === r ? 0.3 : 0,
-                    shadowRadius: 6,
-                  })}
-                >
-                  <Text style={{
-                    fontSize: 14, fontWeight: '700',
-                    color: role === r ? '#FFF' : colors.inkMuted,
-                  }}>
-                    {r === 'volunteer' ? '🙋 Volunteer' : '🏢 NGO'}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
+            <RoleSelector role={role} onSelect={setRole} colors={colors} />
 
             {/* Google Sign-In Button */}
             <Pressable
               onPress={handleSubmit}
               style={({ pressed }) => ({
-                height: 54, borderRadius: 16, borderWidth: 1.5, borderColor: colors.border,
-                backgroundColor: colors.card, flexDirection: 'row',
-                alignItems: 'center', justifyContent: 'center',
+                flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+                height: 52, borderRadius: 12, borderWidth: 1, borderColor: '#E4E4F0',
+                backgroundColor: '#FFFFFF', paddingHorizontal: 16, gap: 12,
                 transform: [{ scale: pressed ? 0.97 : 1 }],
               })}
             >
-              <Text style={{ fontSize: 22, marginRight: 10 }}>🔵</Text>
-              <Text style={{ fontSize: 15, fontWeight: '600', color: colors.ink }}>
+              <GoogleGIcon />
+              <Text style={{ fontSize: 15, fontWeight: '600', color: '#0F0E17' }}>
                 Continue with Google
               </Text>
             </Pressable>

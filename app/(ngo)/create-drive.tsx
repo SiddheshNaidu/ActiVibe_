@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, SafeAreaView, ScrollView, Alert, Dimensions } from 'react-native';
+import { View, Text, TextInput, Pressable, ScrollView, Alert, Dimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/stores/authStore';
 import { Colors } from '@/constants/theme';
@@ -43,7 +44,7 @@ export default function CreateDriveScreen() {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.surface }}>
+    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: colors.surface }}>
       {/* Header */}
       <View style={{
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
@@ -75,7 +76,7 @@ export default function CreateDriveScreen() {
           backgroundColor: colors.card, borderRadius: 24, padding: 24,
           shadowColor: '#000', shadowOffset: { width: 0, height: 3 },
           shadowOpacity: 0.06, shadowRadius: 10, elevation: 3,
-          borderWidth: 1, borderColor: colors.border,
+          borderWidth: 1, borderColor: colors.glassBorder,
         }}>
           {/* Drive Name */}
           <Text style={{ fontSize: 12, fontWeight: '700', color: colors.inkLight, marginBottom: 6 }}>

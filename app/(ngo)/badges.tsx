@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, SafeAreaView, Image, Pressable, Alert, Dimensions } from 'react-native';
+import { View, Text, ScrollView, Image, Pressable, Alert, Dimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '@/stores/authStore';
 import { Colors, BadgeTypes } from '@/constants/theme';
 import { SEED_ANALYTICS_VOLUNTEERS, SEED_DRIVE } from '@/data/seed';
@@ -22,7 +23,7 @@ export default function BadgesScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.surface }}>
+    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: colors.surface }}>
       {/* Header */}
       <View style={{
         paddingHorizontal: 20, paddingVertical: 16,
@@ -56,7 +57,7 @@ export default function BadgesScreen() {
               padding: 14, marginRight: 12, alignItems: 'center',
               shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
-              borderWidth: 1, borderColor: colors.border,
+              borderWidth: 1, borderColor: colors.glassBorder,
               transform: [{ scale: pressed ? 0.95 : 1 }],
             })}>
               <View style={{
@@ -85,7 +86,7 @@ export default function BadgesScreen() {
             backgroundColor: colors.card, borderRadius: 20, padding: 16, marginBottom: 12,
             shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
-            borderWidth: 1, borderColor: colors.border,
+            borderWidth: 1, borderColor: colors.glassBorder,
           }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
               <View style={{

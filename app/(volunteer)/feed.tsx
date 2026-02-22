@@ -1,16 +1,18 @@
 import React, { useState, useCallback } from 'react';
 import {
-  View, Text, ScrollView, Pressable, SafeAreaView, Image,
+  View, Text, ScrollView, Pressable, Image,
   FlatList, TextInput, Modal, RefreshControl, Dimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/stores/authStore';
 import { useFeedStore } from '@/stores/feedStore';
 import { useActiveEventStore } from '@/stores/activeEventStore';
 import { useNotifStore } from '@/stores/notifStore';
-import { Colors } from '@/constants/theme';
+import { Colors, GlassStyle } from '@/constants/theme';
 import { type FeedPost } from '@/data/seed';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 
 const { width } = Dimensions.get('window');
 
@@ -59,9 +61,9 @@ function PostCard({ post, colors }: { post: FeedPost; colors: typeof Colors.ligh
   return (
     <View style={{
       backgroundColor: colors.card, borderRadius: 20, marginBottom: 14,
-      shadowColor: '#000', shadowOffset: { width: 0, height: 3 },
-      shadowOpacity: 0.06, shadowRadius: 10, elevation: 3,
-      overflow: 'hidden', borderWidth: 1, borderColor: colors.border,
+      shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.06, shadowRadius: 16, elevation: 3,
+      overflow: 'hidden', borderWidth: 1, borderColor: colors.glassBorder,
     }}>
       {/* Header */}
       <View style={{ flexDirection: 'row', alignItems: 'center', padding: 14 }}>
@@ -131,6 +133,19 @@ function PostCard({ post, colors }: { post: FeedPost; colors: typeof Colors.ligh
         </Pressable>
       </View>
 
+      {/* Register CTA for drive posts */}
+      {post.type === 'ngo_drive' && (
+        <Pressable style={({ pressed }) => ({
+          marginHorizontal: 16, marginBottom: 12, height: 44, borderRadius: 12,
+          backgroundColor: '#059669', alignItems: 'center', justifyContent: 'center',
+          transform: [{ scale: pressed ? 0.96 : 1 }],
+        })}>
+          <Text style={{ fontSize: 15, fontWeight: '600', color: '#FFFFFF' }}>
+            Register for This Drive
+          </Text>
+        </Pressable>
+      )}
+
       {/* CTA */}
       {post.ctaLabel && (
         <Pressable style={({ pressed }) => ({
@@ -184,12 +199,14 @@ export default function FeedScreen() {
   const STORY_SIZE = 68;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.surface }}>
-      {/* Nav Bar */}
-      <View style={{
+    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: colors.surface }}>
+      {/* Nav Bar — Frosted Glass */}
+      <BlurView intensity={80} tint={darkMode ? 'dark' : 'light'} style={{
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
         paddingHorizontal: 20, paddingVertical: 14,
-        backgroundColor: colors.card, borderBottomWidth: 1, borderBottomColor: colors.border,
+        borderBottomWidth: 0,
+        shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.04, shadowRadius: 8,
       }}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <View style={{
@@ -232,7 +249,7 @@ export default function FeedScreen() {
             )}
           </Pressable>
         </View>
-      </View>
+      </BlurView>
 
       {/* Active Drive Banner */}
       {activeDrive && (
@@ -268,16 +285,16 @@ export default function FeedScreen() {
             onPress={() => setFeedTab(tab.key)}
             style={({ pressed }) => ({
               paddingHorizontal: 18, height: 38, borderRadius: 9999,
-              backgroundColor: feedTab === tab.key ? colors.brand : colors.gray100,
-              alignItems: 'center', justifyContent: 'center',
-              flexDirection: 'row',
-              transform: [{ scale: pressed ? 0.95 : 1 }],
-              shadowColor: feedTab === tab.key ? colors.brand : 'transparent',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: feedTab === tab.key ? 0.3 : 0,
-              shadowRadius: 6,
-              borderWidth: feedTab === tab.key ? 0 : 1,
-              borderColor: colors.border,
+            backgroundColor: feedTab === tab.key ? colors.brand : 'rgba(255,255,255,0.5)',
+            alignItems: 'center', justifyContent: 'center',
+            flexDirection: 'row',
+            transform: [{ scale: pressed ? 0.95 : 1 }],
+            shadowColor: feedTab === tab.key ? colors.brand : 'transparent',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: feedTab === tab.key ? 0.3 : 0,
+            shadowRadius: 6,
+            borderWidth: feedTab === tab.key ? 0 : 1,
+            borderColor: 'rgba(255,255,255,0.6)',
             })}
           >
             <Text style={{ fontSize: 13, marginRight: 4 }}>{tab.emoji}</Text>
@@ -305,7 +322,10 @@ export default function FeedScreen() {
               DRIVES NEAR YOU
             </Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {['Greenpeace', 'TeachForIndia', 'iVolunteer', 'NSS', 'Red Cross'].map((name, i) => (
+              {['Greenpeace', 'TeachForIndia', 'iVolunteer', 'NSS', 'Red Cross'].map((name, i) => {
+                const storyColours = ['#059669','#2563EB','#DC2626','#D97706','#0891B2'];
+                const bgColour = storyColours[name.charCodeAt(0) % storyColours.length];
+                return (
                 <Pressable
                   key={i}
                   style={({ pressed }) => ({
@@ -323,12 +343,12 @@ export default function FeedScreen() {
                     <View style={{
                       width: STORY_SIZE, height: STORY_SIZE, borderRadius: STORY_SIZE / 2,
                       borderWidth: 2, borderColor: colors.card,
-                      overflow: 'hidden', backgroundColor: colors.card,
+                      overflow: 'hidden', backgroundColor: bgColour,
+                      alignItems: 'center', justifyContent: 'center',
                     }}>
-                      <Image
-                        source={{ uri: `https://api.dicebear.com/7.x/identicon/png?seed=${name}` }}
-                        style={{ width: STORY_SIZE - 4, height: STORY_SIZE - 4, borderRadius: (STORY_SIZE - 4) / 2 }}
-                      />
+                      <Text style={{ fontSize: 20, fontWeight: '700', color: '#FFFFFF' }}>
+                        {name.charAt(0)}
+                      </Text>
                     </View>
                   </LinearGradient>
                   <Text style={{ fontSize: 11, color: colors.ink, marginTop: 6, textAlign: 'center', fontWeight: '500' }}>
@@ -343,7 +363,8 @@ export default function FeedScreen() {
                     </Text>
                   </View>
                 </Pressable>
-              ))}
+                );
+              })}
             </ScrollView>
           </View>
         }

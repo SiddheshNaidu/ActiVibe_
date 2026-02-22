@@ -1,12 +1,14 @@
 import React from 'react';
 import {
-  View, Text, ScrollView, SafeAreaView, Pressable, Image, Dimensions,
+  View, Text, ScrollView, Pressable, Image, Dimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '@/stores/authStore';
 import { useFeedStore } from '@/stores/feedStore';
 import { Colors } from '@/constants/theme';
 import { SEED_NGO_KPIS } from '@/data/seed';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 
 const { width } = Dimensions.get('window');
 const KPI_WIDTH = (width - 52) / 2;
@@ -27,12 +29,13 @@ export default function NGOFeedScreen() {
   const ngoPostsOnly = posts.filter((p) => p.authorRole === 'ngo' || p.type === 'volunteer_live');
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.surface }}>
-      {/* Nav */}
-      <View style={{
+    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: colors.surface }}>
+      {/* Nav — Frosted Glass */}
+      <BlurView intensity={80} tint={darkMode ? 'dark' : 'light'} style={{
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
         paddingHorizontal: 20, paddingVertical: 14,
-        backgroundColor: colors.card, borderBottomWidth: 1, borderBottomColor: colors.border,
+        shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.04, shadowRadius: 8,
       }}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.brand, marginRight: 6 }} />
@@ -48,7 +51,7 @@ export default function NGOFeedScreen() {
         >
           <Text style={{ fontSize: 16 }}>{darkMode ? '☀️' : '🌙'}</Text>
         </Pressable>
-      </View>
+      </BlurView>
 
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
         {/* Welcome */}
@@ -67,7 +70,7 @@ export default function NGOFeedScreen() {
               padding: 18, overflow: 'hidden',
               shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.06, shadowRadius: 8, elevation: 2,
-              borderWidth: 1, borderColor: colors.border,
+              borderWidth: 1, borderColor: colors.glassBorder,
             }}>
               <View style={{
                 width: 40, height: 40, borderRadius: 12,
@@ -93,7 +96,7 @@ export default function NGOFeedScreen() {
             backgroundColor: colors.card, borderRadius: 18, padding: 16, marginBottom: 12,
             shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.04, shadowRadius: 6, elevation: 1,
-            borderWidth: 1, borderColor: colors.border,
+            borderWidth: 1, borderColor: colors.glassBorder,
           }}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <View style={{
