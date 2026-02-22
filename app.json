@@ -30,7 +30,13 @@
       "bundler": "metro"
     },
     "plugins": [
-      ["expo-router", { "root": "./app" }]
+      [
+        "expo-router",
+        {
+          "root": "./app"
+        }
+      ],
+      "expo-font"
     ]
   }
 }

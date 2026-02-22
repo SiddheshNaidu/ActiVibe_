@@ -1,10 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, FlatList, Pressable, ScrollView } from 'react-native';
+import { View, Text, FlatList, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '@/stores/authStore';
 import { useNotifStore } from '@/stores/notifStore';
 import { Colors } from '@/constants/theme';
-import { BlurView } from 'expo-blur';
 
 const ICONS: Record<string, string> = {
   drive_confirmed: '✅',
@@ -48,56 +47,52 @@ export default function NotificationsScreen() {
 
   return (
     <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: colors.surface }}>
-      {/* Header — Frosted */}
-      <BlurView intensity={80} tint={darkMode ? 'dark' : 'light'} style={{
+      {/* Header — Solid */}
+      <View style={{
         flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-        paddingHorizontal: 20, paddingVertical: 16,
-        shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.04, shadowRadius: 8,
+        paddingHorizontal: 16, height: 52,
+        backgroundColor: colors.card,
+        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderBottomColor: colors.border,
       }}>
         <View>
-          <Text style={{ fontSize: 24, fontWeight: '800', color: colors.ink }}>Notifications</Text>
-          {unread > 0 && (
-            <Text style={{ fontSize: 12, color: colors.inkMuted, marginTop: 2 }}>{unread} unread</Text>
-          )}
+          <Text style={{ fontSize: 24, fontWeight: '700', color: colors.ink }}>Notifications</Text>
         </View>
         {unread > 0 && (
           <Pressable
             onPress={markAllRead}
+            hitSlop={10}
             style={({ pressed }) => ({
-              paddingHorizontal: 14, paddingVertical: 7, borderRadius: 12,
-              backgroundColor: colors.brandLight,
-              transform: [{ scale: pressed ? 0.95 : 1 }],
+              opacity: pressed ? 0.6 : 1,
             })}
           >
-            <Text style={{ fontSize: 13, fontWeight: '700', color: colors.brand }}>Mark all read</Text>
+            <Text style={{ fontSize: 15, fontWeight: '500', color: '#059669' }}>Mark all read</Text>
           </Pressable>
         )}
-      </BlurView>
+      </View>
 
       {/* Filter Chips */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, gap: 8, paddingVertical: 8 }}
+        contentContainerStyle={{ paddingHorizontal: 16, gap: 8, paddingVertical: 12 }}
       >
         {FILTERS.map((f) => (
           <Pressable
             key={f}
             onPress={() => setActiveFilter(f)}
             style={({ pressed }) => ({
-              height: 34, paddingHorizontal: 14, borderRadius: 999,
-              backgroundColor: activeFilter === f ? '#059669' : 'rgba(255,255,255,0.5)',
+              height: 36, paddingHorizontal: 16, borderRadius: 999,
+              backgroundColor: activeFilter === f ? '#059669' : 'transparent',
               justifyContent: 'center',
               transform: [{ scale: pressed ? 0.95 : 1 }],
               borderWidth: activeFilter === f ? 0 : 1,
-              borderColor: 'rgba(255,255,255,0.6)',
+              borderColor: colors.border,
             })}
           >
             <Text style={{
-              fontSize: 13,
-              fontWeight: activeFilter === f ? '600' : '400',
-              color: activeFilter === f ? '#FFFFFF' : '#7B78A0',
+              fontSize: 13, fontWeight: '600',
+              color: activeFilter === f ? '#FFFFFF' : colors.inkMuted,
             }}>
               {f}
             </Text>
@@ -109,14 +104,20 @@ export default function NotificationsScreen() {
       <FlatList
         data={filteredItems}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ padding: 16, paddingBottom: 32, flexGrow: 1 }}
+        contentContainerStyle={{ paddingBottom: 32, flexGrow: 1 }}
+        ItemSeparatorComponent={() => (
+          <View style={{
+            height: StyleSheet.hairlineWidth,
+            backgroundColor: colors.border,
+          }} />
+        )}
         ListEmptyComponent={
           <View style={{ alignItems: 'center', paddingTop: 64 }}>
             <Text style={{ fontSize: 48 }}>🔔</Text>
-            <Text style={{ fontSize: 18, fontWeight: '700', color: colors.ink, marginTop: 16 }}>
+            <Text style={{ fontSize: 18, fontWeight: '600', color: colors.ink, marginTop: 16 }}>
               All caught up
             </Text>
-            <Text style={{ fontSize: 15, color: '#7B78A0', marginTop: 8, textAlign: 'center' }}>
+            <Text style={{ fontSize: 13, color: colors.inkMuted, marginTop: 8, textAlign: 'center' }}>
               No notifications in this category yet.
             </Text>
           </View>
@@ -125,35 +126,43 @@ export default function NotificationsScreen() {
           <Pressable
             onPress={() => markRead(item.id)}
             style={({ pressed }) => ({
-              flexDirection: 'row',
-              backgroundColor: item.read ? colors.card : (darkMode ? 'rgba(16,185,129,0.08)' : colors.brandLight),
-              borderRadius: 18, padding: 16, marginBottom: 12,
-              borderLeftWidth: item.read ? 0 : 4, borderLeftColor: colors.brand,
-              borderWidth: 1, borderColor: item.read ? colors.glassBorder : 'transparent',
-              shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.04, shadowRadius: 4, elevation: 1,
-              transform: [{ scale: pressed ? 0.98 : 1 }],
+              flexDirection: 'row', alignItems: 'flex-start',
+              paddingHorizontal: 16, paddingVertical: 14,
+              backgroundColor: item.read ? colors.card : colors.brandLight,
+              gap: 12,
+              opacity: pressed ? 0.85 : 1,
+              borderLeftWidth: item.read ? 0 : 3,
+              borderLeftColor: '#059669',
             })}
           >
+            {/* Icon Circle — 48dp */}
             <View style={{
-              width: 46, height: 46, borderRadius: 14,
+              width: 48, height: 48, borderRadius: 24,
               backgroundColor: ICON_BG[item.type] || '#F3F4F6',
-              alignItems: 'center', justifyContent: 'center', marginRight: 14,
+              alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
             }}>
               <Text style={{ fontSize: 22 }}>{ICONS[item.type] || '📌'}</Text>
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 15, fontWeight: '700', color: colors.ink }}>{item.title}</Text>
-              <Text style={{ fontSize: 13, color: colors.inkLight, marginTop: 3, lineHeight: 18 }}>
+
+            {/* Content */}
+            <View style={{ flex: 1, gap: 3 }}>
+              <Text style={{ fontSize: 15, fontWeight: '600', color: colors.ink }}>{item.title}</Text>
+              <Text style={{ fontSize: 13, color: colors.inkLight, lineHeight: 19 }}>
                 {item.body}
               </Text>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10, alignItems: 'center' }}>
-                <Pressable style={({ pressed }) => ({
-                  paddingHorizontal: 12, paddingVertical: 5, borderRadius: 10,
-                  backgroundColor: colors.brand,
-                  transform: [{ scale: pressed ? 0.95 : 1 }],
-                })}>
-                  <Text style={{ fontSize: 12, fontWeight: '700', color: '#FFF' }}>{item.ctaLabel}</Text>
+
+              {/* CTA + timestamp row */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
+                <Pressable
+                  hitSlop={10}
+                  style={({ pressed }) => ({
+                    paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8,
+                    borderWidth: 1.5, borderColor: '#059669',
+                    opacity: pressed ? 0.7 : 1,
+                  })}
+                >
+                  <Text style={{ fontSize: 12, fontWeight: '600', color: '#059669' }}>{item.ctaLabel}</Text>
                 </Pressable>
                 <Text style={{ fontSize: 11, color: colors.inkMuted }}>{item.timestamp}</Text>
               </View>

@@ -130,7 +130,7 @@ export default function ProfileScreen() {
     <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: darkMode ? '#064E3B' : '#059669' }}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 80 }}
+        contentContainerStyle={{ paddingBottom: 120 }}
       >
         {/* Cover Photo */}
         <LinearGradient

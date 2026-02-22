@@ -9,7 +9,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { Colors } from '@/constants/theme';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
-  useSharedValue, useAnimatedStyle, withTiming, Easing,
+  useSharedValue, useAnimatedStyle, withSpring, Easing,
 } from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
@@ -33,57 +33,57 @@ function RoleSelector({
   onSelect: (r: 'volunteer' | 'ngo') => void;
   colors: typeof Colors.light;
 }) {
-  const translateX = useSharedValue(role === 'volunteer' ? 0 : 1);
+  const CONTAINER_PAD = 4;
+  const SEGMENT_WIDTH = (width - 48 - CONTAINER_PAD * 2) / 2;
+  const translateX = useSharedValue(role === 'volunteer' ? 0 : SEGMENT_WIDTH);
 
   const pillStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: withTiming(translateX.value * ((width - 48 - 8 - 8) / 2), {
-      duration: 200,
-      easing: Easing.bezier(0.4, 0, 0.2, 1),
-    }) }],
+    transform: [{ translateX: translateX.value }],
   }));
 
   const handleSelect = (r: 'volunteer' | 'ngo') => {
-    translateX.value = r === 'volunteer' ? 0 : 1;
+    translateX.value = withSpring(r === 'volunteer' ? 0 : SEGMENT_WIDTH, {
+      damping: 20,
+      stiffness: 200,
+      overshootClamping: true,
+    });
     onSelect(r);
   };
 
-  const pillWidth = (width - 48 - 8 - 8) / 2;
-
   return (
     <View style={{
-      backgroundColor: '#F0F0F0', borderRadius: 999, padding: 4,
-      marginBottom: 24, position: 'relative',
+      height: 48, backgroundColor: '#F0F0F0', borderRadius: 999,
+      padding: CONTAINER_PAD, marginBottom: 24, position: 'relative',
+      flexDirection: 'row', overflow: 'hidden',
     }}>
-      {/* Animated pill background */}
+      {/* Sliding indicator */}
       <Animated.View style={[{
-        position: 'absolute', top: 4, left: 4,
-        width: pillWidth, height: 44, borderRadius: 999,
+        position: 'absolute', top: CONTAINER_PAD, bottom: CONTAINER_PAD, left: CONTAINER_PAD,
+        width: SEGMENT_WIDTH, borderRadius: 999,
         backgroundColor: '#059669',
         shadowColor: '#059669', shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.3, shadowRadius: 6, elevation: 3,
       }, pillStyle]} />
 
-      <View style={{ flexDirection: 'row' }}>
-        {(['volunteer', 'ngo'] as const).map((r) => (
-          <Pressable
-            key={r}
-            onPress={() => handleSelect(r)}
-            style={{
-              flex: 1, height: 44, borderRadius: 999,
-              alignItems: 'center', justifyContent: 'center',
-              zIndex: 1,
-            }}
-          >
-            <Text style={{
-              fontSize: 14,
-              fontWeight: role === r ? '600' : '400',
-              color: role === r ? '#FFFFFF' : '#7B78A0',
-            }}>
-              {r === 'volunteer' ? '🧑‍🤝‍🧑 Volunteer' : '🏢 NGO'}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+      {(['volunteer', 'ngo'] as const).map((r) => (
+        <Pressable
+          key={r}
+          onPress={() => handleSelect(r)}
+          style={{
+            flex: 1, height: 40, borderRadius: 999,
+            alignItems: 'center', justifyContent: 'center',
+            zIndex: 1,
+          }}
+        >
+          <Text style={{
+            fontSize: 14,
+            fontWeight: role === r ? '600' : '400',
+            color: role === r ? '#FFFFFF' : '#7B78A0',
+          }}>
+            {r === 'volunteer' ? '🧑‍🤝‍🧑 Volunteer' : '🏢 NGO'}
+          </Text>
+        </Pressable>
+      ))}
     </View>
   );
 }

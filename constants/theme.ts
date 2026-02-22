@@ -1,20 +1,29 @@
 // ActiVibe Design System — Token Reference
-// Color theme: Green + lime-yellow off-white + Glass UI
+// Instagram-grade polish. Every value intentional.
 
 export const Colors = {
   light: {
+    // Brand
     brand: '#059669',
     brandLight: '#D1FAE5',
     brandDark: '#047857',
     brandMid: '#10B981',
+
+    // Surfaces
+    surface: '#F9F9FB',
+    card: '#FFFFFF',
+    cardSolid: '#FFFFFF',
+
+    // Text
     ink: '#0F0E17',
     inkLight: '#3D3A54',
     inkMuted: '#7B78A0',
-    surface: '#FEFFF8',
-    card: 'rgba(255, 255, 255, 0.72)',
-    cardSolid: '#FFFFFF',
-    glassBorder: 'rgba(255, 255, 255, 0.5)',
+
+    // Border
     border: '#E4E4F0',
+    glassBorder: '#E4E4F0',
+
+    // Semantic
     green: '#059669',
     greenLight: '#D1FAE5',
     amber: '#D97706',
@@ -22,31 +31,44 @@ export const Colors = {
     red: '#DC2626',
     teal: '#0D9488',
     tealLight: '#CCFBF1',
+
+    // Neutrals
     white: '#FFFFFF',
     gray100: '#F3F4F6',
     gray200: '#E5E7EB',
     gray400: '#9CA3AF',
   },
   dark: {
-    brand: '#10B981',
-    brandLight: '#064E3B',
+    // Brand — green stays same in dark
+    brand: '#059669',
+    brandLight: '#052E16',
     brandDark: '#047857',
-    brandMid: '#34D399',
+    brandMid: '#10B981',
+
+    // Surfaces
+    surface: '#0F0E17',
+    card: '#1A1828',
+    cardSolid: '#1A1828',
+
+    // Text
     ink: '#F0EFFF',
     inkLight: '#A09ABF',
-    inkMuted: '#7B78A0',
-    surface: '#0F0E17',
-    card: 'rgba(26, 24, 40, 0.75)',
-    cardSolid: '#1A1828',
-    glassBorder: 'rgba(255, 255, 255, 0.06)',
+    inkMuted: '#5E5A7A',
+
+    // Border
     border: '#2D2B45',
-    green: '#10B981',
-    greenLight: '#064E3B',
-    amber: '#FBBF24',
+    glassBorder: '#2D2B45',
+
+    // Semantic
+    green: '#059669',
+    greenLight: '#052E16',
+    amber: '#D97706',
     amberLight: '#78350F',
-    red: '#EF4444',
+    red: '#DC2626',
     teal: '#14B8A6',
     tealLight: '#134E4A',
+
+    // Neutrals
     white: '#FFFFFF',
     gray100: '#1F2937',
     gray200: '#374151',
@@ -54,67 +76,30 @@ export const Colors = {
   },
 };
 
-export const GlassStyle = {
-  light: {
-    card: {
-      backgroundColor: 'rgba(255, 255, 255, 0.72)',
-      borderWidth: 1,
-      borderColor: 'rgba(255, 255, 255, 0.5)',
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.06,
-      shadowRadius: 16,
-      elevation: 3,
-    },
-    navBar: {
-      backgroundColor: 'rgba(255, 255, 255, 0.85)',
-      borderBottomWidth: 0,
-    },
-    chip: {
-      backgroundColor: 'rgba(255, 255, 255, 0.5)',
-      borderWidth: 1,
-      borderColor: 'rgba(255, 255, 255, 0.6)',
-    },
-  },
-  dark: {
-    card: {
-      backgroundColor: 'rgba(26, 24, 40, 0.75)',
-      borderWidth: 1,
-      borderColor: 'rgba(255, 255, 255, 0.06)',
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.15,
-      shadowRadius: 16,
-      elevation: 3,
-    },
-    navBar: {
-      backgroundColor: 'rgba(15, 14, 23, 0.85)',
-      borderBottomWidth: 0,
-    },
-    chip: {
-      backgroundColor: 'rgba(255, 255, 255, 0.06)',
-      borderWidth: 1,
-      borderColor: 'rgba(255, 255, 255, 0.08)',
-    },
-  },
-};
-
+// Typography scale — Inter font family
+// lineHeight = fontSize × 1.45 for multiline, omit for single-line
 export const Typography = {
-  display: { fontSize: 32, fontWeight: '800' as const, lineHeight: 38 },
-  h1: { fontSize: 26, fontWeight: '700' as const, lineHeight: 32 },
-  h2: { fontSize: 20, fontWeight: '700' as const, lineHeight: 26 },
-  h3: { fontSize: 17, fontWeight: '600' as const, lineHeight: 22 },
-  body: { fontSize: 15, fontWeight: '400' as const, lineHeight: 22 },
-  bodySm: { fontSize: 13, fontWeight: '400' as const, lineHeight: 18 },
-  caption: { fontSize: 11, fontWeight: '400' as const, lineHeight: 14 },
-  button: { fontSize: 15, fontWeight: '600' as const, lineHeight: 20 },
-  mono: { fontSize: 13, fontWeight: '400' as const, lineHeight: 18 },
+  display:  { fontSize: 32, fontWeight: '700' as const, fontFamily: 'Inter_700Bold' },
+  h1:       { fontSize: 24, fontWeight: '700' as const, fontFamily: 'Inter_700Bold' },
+  h2:       { fontSize: 18, fontWeight: '600' as const, fontFamily: 'Inter_600SemiBold' },
+  body:     { fontSize: 15, fontWeight: '400' as const, fontFamily: 'Inter_400Regular', lineHeight: 22 },
+  bodyMed:  { fontSize: 15, fontWeight: '500' as const, fontFamily: 'Inter_500Medium' },
+  small:    { fontSize: 13, fontWeight: '400' as const, fontFamily: 'Inter_400Regular', lineHeight: 19 },
+  caption:  { fontSize: 11, fontWeight: '400' as const, fontFamily: 'Inter_400Regular' },
+  button:   { fontSize: 15, fontWeight: '600' as const, fontFamily: 'Inter_600SemiBold' },
+  mono:     { fontSize: 13, fontWeight: '400' as const, fontFamily: 'Courier' },
 };
 
+// Spacing — 8dp base grid
 export const Spacing = {
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 24,
+  xxl: 32,
   screenPad: 16,
   cardPad: 16,
-  gapTight: 8,
   gapCards: 12,
   gapSection: 24,
 };
@@ -122,7 +107,8 @@ export const Spacing = {
 export const Radius = {
   sm: 8,
   md: 12,
-  lg: 20,
+  lg: 16,
+  xl: 20,
   full: 9999,
 };
 

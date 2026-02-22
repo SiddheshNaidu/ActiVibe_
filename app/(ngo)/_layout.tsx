@@ -1,10 +1,22 @@
 import { Tabs } from "expo-router";
-import { Text } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuthStore } from "@/stores/authStore";
 import { Colors } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
-import { BlurView } from "expo-blur";
+
+function TabIcon({ name, focusedName, focused, color }: {
+  name: string; focusedName: string; focused: boolean; color: string;
+}) {
+  return (
+    <View style={{ alignItems: 'center' }}>
+      {focused && (
+        <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: '#059669', marginBottom: 4 }} />
+      )}
+      <Ionicons name={(focused ? focusedName : name) as any} size={24} color={color} />
+    </View>
+  );
+}
 
 export default function NGOLayout() {
   const darkMode = useAuthStore((s) => s.darkMode);
@@ -15,36 +27,22 @@ export default function NGOLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarBackground: () => (
-          <BlurView
-            intensity={90}
-            tint={darkMode ? 'dark' : 'light'}
-            style={{
-              position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-            }}
-          />
-        ),
         tabBarStyle: {
-          position: 'absolute',
-          backgroundColor: 'transparent',
-          borderTopWidth: 0,
+          backgroundColor: colors.card,
+          borderTopWidth: StyleSheet.hairlineWidth,
+          borderTopColor: colors.border,
           height: 56 + insets.bottom,
           paddingBottom: insets.bottom,
+          paddingTop: 8,
           elevation: 0,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.06,
-          shadowRadius: 12,
+          shadowOpacity: 0,
         },
         tabBarActiveTintColor: '#059669',
         tabBarInactiveTintColor: '#9CA3AF',
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: '500',
-          marginTop: 4,
-        },
-        tabBarItemStyle: {
-          paddingTop: 8,
+          marginTop: 2,
         },
       }}
     >
@@ -52,12 +50,8 @@ export default function NGOLayout() {
         name="feed"
         options={{
           title: 'Dashboard',
-          tabBarIcon: ({ focused }) => (
-            <Ionicons
-              name={focused ? 'grid' : 'grid-outline'}
-              size={24}
-              color={focused ? '#059669' : '#9CA3AF'}
-            />
+          tabBarIcon: ({ focused, color }) => (
+            <TabIcon name="grid-outline" focusedName="grid" focused={focused} color={color} />
           ),
         }}
       />
@@ -65,12 +59,8 @@ export default function NGOLayout() {
         name="create-drive"
         options={{
           title: 'Create',
-          tabBarIcon: ({ focused }) => (
-            <Ionicons
-              name={focused ? 'add-circle' : 'add-circle-outline'}
-              size={24}
-              color={focused ? '#059669' : '#9CA3AF'}
-            />
+          tabBarIcon: ({ focused, color }) => (
+            <TabIcon name="add-circle-outline" focusedName="add-circle" focused={focused} color={color} />
           ),
         }}
       />
@@ -78,12 +68,8 @@ export default function NGOLayout() {
         name="analytics"
         options={{
           title: 'Analytics',
-          tabBarIcon: ({ focused }) => (
-            <Ionicons
-              name={focused ? 'bar-chart' : 'bar-chart-outline'}
-              size={24}
-              color={focused ? '#059669' : '#9CA3AF'}
-            />
+          tabBarIcon: ({ focused, color }) => (
+            <TabIcon name="bar-chart-outline" focusedName="bar-chart" focused={focused} color={color} />
           ),
         }}
       />
@@ -91,12 +77,8 @@ export default function NGOLayout() {
         name="badges"
         options={{
           title: 'Badges',
-          tabBarIcon: ({ focused }) => (
-            <Ionicons
-              name={focused ? 'ribbon' : 'ribbon-outline'}
-              size={24}
-              color={focused ? '#059669' : '#9CA3AF'}
-            />
+          tabBarIcon: ({ focused, color }) => (
+            <TabIcon name="ribbon-outline" focusedName="ribbon" focused={focused} color={color} />
           ),
         }}
       />
@@ -104,12 +86,8 @@ export default function NGOLayout() {
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ focused }) => (
-            <Ionicons
-              name={focused ? 'business' : 'business-outline'}
-              size={24}
-              color={focused ? '#059669' : '#9CA3AF'}
-            />
+          tabBarIcon: ({ focused, color }) => (
+            <TabIcon name="business-outline" focusedName="business" focused={focused} color={color} />
           ),
         }}
       />

@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, Pressable, Image,
-  FlatList, TextInput, Modal, RefreshControl, Dimensions,
+  FlatList, RefreshControl, Dimensions, Share, StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -9,26 +9,53 @@ import { useAuthStore } from '@/stores/authStore';
 import { useFeedStore } from '@/stores/feedStore';
 import { useActiveEventStore } from '@/stores/activeEventStore';
 import { useNotifStore } from '@/stores/notifStore';
-import { Colors, GlassStyle } from '@/constants/theme';
+import { Colors } from '@/constants/theme';
 import { type FeedPost } from '@/data/seed';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
+import { Ionicons } from '@expo/vector-icons';
+import Animated, {
+  useSharedValue, useAnimatedStyle, withSpring, withSequence,
+  withRepeat, withTiming, Easing,
+} from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
 
+/* ─── GPS Verified Badge ─── */
 function VerifiedBadge({ variant }: { variant: 'live' | 'post_event' }) {
   const isLive = variant === 'live';
+  const pulseScale = useSharedValue(1);
+
+  // Pulse the dot only for live badges
+  React.useEffect(() => {
+    if (isLive) {
+      pulseScale.value = withRepeat(
+        withTiming(1.4, { duration: 750, easing: Easing.inOut(Easing.ease) }),
+        -1, // infinite
+        true, // reverse
+      );
+    }
+  }, [isLive]);
+
+  const dotStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pulseScale.value }],
+  }));
+
   return (
     <View style={{
-      flexDirection: 'row', alignItems: 'center',
+      flexDirection: 'row', alignItems: 'center', gap: 4,
+      alignSelf: 'flex-start',
       backgroundColor: isLive ? '#D1FAE5' : '#FEF3C7',
-      paddingHorizontal: 10, paddingVertical: 4, borderRadius: 9999,
-      alignSelf: 'flex-start', marginTop: 4,
+      paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999,
+      marginTop: 4,
     }}>
-      <Text style={{ fontSize: 10 }}>✓ </Text>
+      <Animated.View style={[{
+        width: 6, height: 6, borderRadius: 3,
+        backgroundColor: isLive ? '#059669' : '#D97706',
+      }, isLive ? dotStyle : undefined]} />
       <Text style={{
-        fontSize: 11, fontWeight: '700',
+        fontSize: 11, fontWeight: '600',
         color: isLive ? '#059669' : '#D97706',
+        letterSpacing: 0.2,
       }}>
         {isLive ? 'GPS Verified' : 'Post-Event'}
       </Text>
@@ -36,23 +63,48 @@ function VerifiedBadge({ variant }: { variant: 'live' | 'post_event' }) {
   );
 }
 
-function PostCard({ post, colors }: { post: FeedPost; colors: typeof Colors.light }) {
+/* ─── Post Card — Instagram-grade ─── */
+function PostCard({ post, colors, darkMode, onRegister, registeredDrives }: {
+  post: FeedPost;
+  colors: typeof Colors.light;
+  darkMode: boolean;
+  onRegister: (driveId: string) => void;
+  registeredDrives: string[];
+}) {
   const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(post.likes ?? 0);
+  const heartScale = useSharedValue(1);
+
+  const handleLike = () => {
+    heartScale.value = withSequence(
+      withSpring(1.4, { damping: 10, stiffness: 180 }),
+      withSpring(1.0, { damping: 12, stiffness: 200 }),
+    );
+    setLiked((prev) => !prev);
+    setLikeCount((prev) => (liked ? prev - 1 : prev + 1));
+  };
+
+  const heartStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: heartScale.value }],
+  }));
+
+  const isDrive = post.type === 'ngo_drive';
+  const isRegistered = isDrive && registeredDrives.includes(post.id);
 
   if (post.type === 'recommendation') {
     return (
       <View style={{
-        backgroundColor: colors.tealLight, borderRadius: 18, padding: 18,
-        marginBottom: 14, borderLeftWidth: 4, borderLeftColor: colors.teal,
+        backgroundColor: colors.tealLight, borderRadius: 16, padding: 16,
+        marginBottom: 12,
       }}>
-        <Text style={{ fontSize: 14, fontWeight: '700', color: colors.teal }}>✨ Matched for You</Text>
-        <Text style={{ fontSize: 14, color: colors.ink, marginTop: 8, lineHeight: 20 }}>{post.caption}</Text>
+        <Text style={{ fontSize: 15, fontWeight: '600', color: colors.teal }}>✨ Matched for You</Text>
+        <Text style={{ fontSize: 15, color: colors.ink, marginTop: 8, lineHeight: 22 }}>{post.caption}</Text>
         <Pressable style={({ pressed }) => ({
-          marginTop: 10, height: 38, borderRadius: 12,
+          marginTop: 12, height: 44, borderRadius: 10,
           backgroundColor: colors.teal, alignItems: 'center', justifyContent: 'center',
-          transform: [{ scale: pressed ? 0.96 : 1 }],
+          transform: [{ scale: pressed ? 0.97 : 1 }],
         })}>
-          <Text style={{ color: '#FFF', fontSize: 13, fontWeight: '700' }}>View Drive →</Text>
+          <Text style={{ color: '#FFF', fontSize: 15, fontWeight: '600' }}>View Drive →</Text>
         </Pressable>
       </View>
     );
@@ -60,106 +112,131 @@ function PostCard({ post, colors }: { post: FeedPost; colors: typeof Colors.ligh
 
   return (
     <View style={{
-      backgroundColor: colors.card, borderRadius: 20, marginBottom: 14,
-      shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.06, shadowRadius: 16, elevation: 3,
-      overflow: 'hidden', borderWidth: 1, borderColor: colors.glassBorder,
+      backgroundColor: colors.card, borderRadius: 16, marginBottom: 12,
+      overflow: 'hidden',
+      shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.06, shadowRadius: 8, elevation: 2,
     }}>
-      {/* Header */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', padding: 14 }}>
-        <View style={{
-          width: 46, height: 46, borderRadius: 23, borderWidth: 2,
-          borderColor: colors.brand, padding: 2, backgroundColor: colors.card,
-        }}>
-          <Image
-            source={{ uri: post.authorAvatar }}
-            style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: colors.gray100 }}
-          />
-        </View>
-        <View style={{ flex: 1, marginLeft: 12 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
-            <Text style={{ fontSize: 15, fontWeight: '700', color: colors.ink }}>{post.authorName}</Text>
-            {post.ngoName && post.authorRole === 'volunteer' && (
-              <Text style={{ fontSize: 13, color: colors.inkMuted }}> at {post.ngoName}</Text>
+      {/* Header Row */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 14, paddingBottom: 10, gap: 10 }}>
+        <Image
+          source={{ uri: post.authorAvatar }}
+          style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.gray100 }}
+        />
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontSize: 15, fontWeight: '500', color: colors.ink }}>{post.authorName}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
+            {post.driveName && (
+              <View style={{
+                backgroundColor: colors.brandLight, paddingHorizontal: 8,
+                paddingVertical: 2, borderRadius: 999,
+              }}>
+                <Text style={{ fontSize: 11, fontWeight: '600', color: colors.brand }}>
+                  #{post.driveName}
+                </Text>
+              </View>
             )}
+            <Text style={{ fontSize: 11, color: colors.inkMuted }}>{post.timestamp}</Text>
           </View>
-          {post.driveName && (
-            <View style={{
-              backgroundColor: colors.brandLight, paddingHorizontal: 8, paddingVertical: 3,
-              borderRadius: 8, alignSelf: 'flex-start', marginTop: 3,
-            }}>
-              <Text style={{ fontSize: 11, fontWeight: '700', color: colors.brand }}>#{post.driveName}</Text>
-            </View>
-          )}
-          {post.verifiedBadge && <VerifiedBadge variant={post.verifiedBadge} />}
         </View>
-        <Text style={{ fontSize: 11, color: colors.inkMuted }}>{post.timestamp}</Text>
+        <Pressable hitSlop={12}>
+          <Ionicons name="ellipsis-horizontal" size={20} color={colors.inkMuted} />
+        </Pressable>
       </View>
 
       {/* Caption */}
-      <Text style={{ fontSize: 15, color: colors.ink, paddingHorizontal: 14, lineHeight: 22, marginBottom: post.imageUrl ? 10 : 0 }}>
+      <Text style={{
+        fontSize: 15, lineHeight: 22, color: colors.ink,
+        paddingHorizontal: 16, paddingBottom: post.imageUrl ? 10 : 0,
+      }}>
         {post.caption}
       </Text>
 
-      {/* Image */}
+      {/* GPS Verified Badge */}
+      {post.verifiedBadge && (
+        <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
+          <VerifiedBadge variant={post.verifiedBadge} />
+        </View>
+      )}
+
+      {/* Image — full bleed */}
       {post.imageUrl && (
         <Image
           source={{ uri: post.imageUrl }}
-          style={{ width: '100%', height: 200, marginTop: 4 }}
+          style={{ width: '100%', aspectRatio: 16 / 9 }}
           resizeMode="cover"
         />
       )}
 
-      {/* Actions */}
-      <View style={{ flexDirection: 'row', padding: 14, gap: 20, alignItems: 'center' }}>
+      {/* Action Row */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 10, gap: 0 }}>
         <Pressable
-          onPress={() => setLiked(!liked)}
-          style={({ pressed }) => ({
-            flexDirection: 'row', alignItems: 'center',
-            transform: [{ scale: pressed ? 0.9 : 1 }],
-          })}
+          onPress={handleLike}
+          hitSlop={10}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginRight: 18 }}
         >
-          <Text style={{ fontSize: 20 }}>{liked ? '❤️' : '🤍'}</Text>
-          <Text style={{ fontSize: 13, color: colors.inkMuted, marginLeft: 5, fontWeight: '600' }}>
-            {post.likes + (liked ? 1 : 0)}
-          </Text>
+          <Animated.View style={heartStyle}>
+            <Ionicons
+              name={liked ? 'heart' : 'heart-outline'}
+              size={24}
+              color={liked ? '#DC2626' : colors.inkMuted}
+            />
+          </Animated.View>
+          <Text style={{ fontSize: 13, color: colors.inkMuted, fontWeight: '500' }}>{likeCount}</Text>
         </Pressable>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Text style={{ fontSize: 18 }}>💬</Text>
-          <Text style={{ fontSize: 13, color: colors.inkMuted, marginLeft: 5, fontWeight: '600' }}>{post.comments}</Text>
-        </View>
-        <Pressable style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.9 : 1 }] })}>
-          <Text style={{ fontSize: 18 }}>↗️</Text>
+
+        <Pressable
+          hitSlop={10}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginRight: 18 }}
+        >
+          <Ionicons name="chatbubble-outline" size={22} color={colors.inkMuted} />
+          <Text style={{ fontSize: 13, color: colors.inkMuted, fontWeight: '500' }}>{post.comments ?? 0}</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => Share.share({ message: 'Check out this drive on ActiVibe!' })}
+          hitSlop={10}
+          style={{ marginLeft: 'auto' }}
+        >
+          <Ionicons name="arrow-redo-outline" size={22} color={colors.inkMuted} />
         </Pressable>
       </View>
 
-      {/* Register CTA for drive posts */}
-      {post.type === 'ngo_drive' && (
-        <Pressable style={({ pressed }) => ({
-          marginHorizontal: 16, marginBottom: 12, height: 44, borderRadius: 12,
-          backgroundColor: '#059669', alignItems: 'center', justifyContent: 'center',
-          transform: [{ scale: pressed ? 0.96 : 1 }],
-        })}>
-          <Text style={{ fontSize: 15, fontWeight: '600', color: '#FFFFFF' }}>
-            Register for This Drive
-          </Text>
-        </Pressable>
+      {/* Register CTA — drive posts only */}
+      {isDrive && !isRegistered && (
+        <View style={{ paddingHorizontal: 16, paddingBottom: 14 }}>
+          <Pressable
+            onPress={() => onRegister(post.id)}
+            style={({ pressed }) => ({
+              height: 44, borderRadius: 10,
+              backgroundColor: '#059669', alignItems: 'center', justifyContent: 'center',
+              transform: [{ scale: pressed ? 0.97 : 1 }],
+            })}
+          >
+            <Text style={{ fontSize: 15, fontWeight: '600', color: '#FFFFFF' }}>
+              Register for This Drive
+            </Text>
+          </Pressable>
+        </View>
       )}
-
-      {/* CTA */}
-      {post.ctaLabel && (
-        <Pressable style={({ pressed }) => ({
-          marginHorizontal: 14, marginBottom: 14, height: 42, borderRadius: 14,
-          backgroundColor: colors.teal, alignItems: 'center', justifyContent: 'center',
-          transform: [{ scale: pressed ? 0.96 : 1 }],
-        })}>
-          <Text style={{ color: '#FFF', fontSize: 14, fontWeight: '700' }}>{post.ctaLabel}</Text>
-        </Pressable>
+      {isDrive && isRegistered && (
+        <View style={{ paddingHorizontal: 16, paddingBottom: 14 }}>
+          <View style={{
+            height: 44, borderRadius: 10, backgroundColor: colors.brandLight,
+            alignItems: 'center', justifyContent: 'center',
+            flexDirection: 'row', gap: 6,
+          }}>
+            <Text style={{ fontSize: 15, fontWeight: '600', color: '#059669' }}>
+              ✓ Registered
+            </Text>
+          </View>
+        </View>
       )}
     </View>
   );
 }
 
+/* ─── Feed Screen ─── */
 export default function FeedScreen() {
   const router = useRouter();
   const darkMode = useAuthStore((s) => s.darkMode);
@@ -173,6 +250,20 @@ export default function FeedScreen() {
   const unread = useNotifStore((s) => s.unread);
   const toggleDarkMode = useAuthStore((s) => s.toggleDarkMode);
   const [refreshing, setRefreshing] = useState(false);
+  const [registeredDrives, setRegisteredDrives] = useState<string[]>([]);
+  const [toast, setToast] = useState<{ visible: boolean; message: string; bg: string; fg: string }>({
+    visible: false, message: '', bg: '#D1FAE5', fg: '#059669',
+  });
+
+  const showToast = (message: string, bg: string, fg: string, duration = 3000) => {
+    setToast({ visible: true, message, bg, fg });
+    setTimeout(() => setToast((prev) => ({ ...prev, visible: false })), duration);
+  };
+
+  const handleRegister = (postId: string) => {
+    setRegisteredDrives((prev) => [...prev, postId]);
+    showToast('✓ Registration sent! The NGO will confirm shortly.', '#D1FAE5', '#059669');
+  };
 
   const formatTimer = (s: number) => {
     const h = Math.floor(s / 3600).toString().padStart(2, '0');
@@ -190,66 +281,55 @@ export default function FeedScreen() {
     feedTab === 'drives' ? posts.filter((p) => p.type === 'ngo_drive' || p.type === 'recommendation') :
     posts.filter((p) => p.type === 'ngo_update' || p.type === 'volunteer_live' || p.type === 'volunteer_post_event');
 
-  const tabs: { key: typeof feedTab; label: string; emoji: string }[] = [
-    { key: 'all', label: 'All', emoji: '📋' },
-    { key: 'drives', label: 'Drives', emoji: '📍' },
-    { key: 'updates', label: 'Updates', emoji: '📢' },
+  const tabs: { key: typeof feedTab; label: string }[] = [
+    { key: 'all', label: 'All' },
+    { key: 'drives', label: 'Drives' },
+    { key: 'updates', label: 'Updates' },
   ];
 
-  const STORY_SIZE = 68;
+  const STORIES = [
+    { name: 'Greenpeace', status: 'live' as const },
+    { name: 'TeachForIndia', status: 'open' as const },
+    { name: 'iVolunteer', status: 'open' as const },
+    { name: 'NSS', status: 'open' as const },
+    { name: 'Red Cross', status: 'open' as const },
+  ];
+  const storyColors = ['#059669', '#2563EB', '#DC2626', '#D97706', '#0891B2'];
 
   return (
     <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: colors.surface }}>
-      {/* Nav Bar — Frosted Glass */}
-      <BlurView intensity={80} tint={darkMode ? 'dark' : 'light'} style={{
+      {/* Nav Bar — Solid */}
+      <View style={{
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        paddingHorizontal: 20, paddingVertical: 14,
-        borderBottomWidth: 0,
-        shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.04, shadowRadius: 8,
+        paddingHorizontal: 16, height: 52,
+        backgroundColor: colors.card,
+        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderBottomColor: colors.border,
       }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <View style={{
-            width: 8, height: 8, borderRadius: 4,
-            backgroundColor: colors.brand, marginRight: 6,
-          }} />
-          <Text style={{ fontSize: 22, fontWeight: '800', color: colors.brand, letterSpacing: -0.5 }}>
-            ActiVibe
-          </Text>
-        </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-          <Pressable
-            onPress={toggleDarkMode}
-            style={({ pressed }) => ({
-              width: 36, height: 36, borderRadius: 18,
-              backgroundColor: colors.gray100, alignItems: 'center', justifyContent: 'center',
-              transform: [{ scale: pressed ? 0.9 : 1 }],
-            })}
-          >
-            <Text style={{ fontSize: 16 }}>{darkMode ? '☀️' : '🌙'}</Text>
+        <Text style={{ fontSize: 22, fontWeight: '700', color: '#059669', letterSpacing: -0.5 }}>
+          ActiVibe
+        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+          <Pressable onPress={toggleDarkMode} hitSlop={12}>
+            <Ionicons name={darkMode ? 'sunny-outline' : 'moon-outline'} size={22} color={colors.inkMuted} />
           </Pressable>
-          <Pressable
-            onPress={() => router.push('/(volunteer)/notifications')}
-            style={({ pressed }) => ({
-              width: 36, height: 36, borderRadius: 18,
-              backgroundColor: colors.gray100, alignItems: 'center', justifyContent: 'center',
-              transform: [{ scale: pressed ? 0.9 : 1 }],
-            })}
-          >
-            <Text style={{ fontSize: 18 }}>🔔</Text>
+          <Pressable onPress={() => router.push('/(volunteer)/notifications')} hitSlop={12} style={{ position: 'relative' }}>
+            <Ionicons name="notifications-outline" size={22} color={colors.inkMuted} />
             {unread > 0 && (
               <View style={{
-                position: 'absolute', top: -2, right: -2,
-                backgroundColor: '#DC2626', borderRadius: 10,
-                minWidth: 18, height: 18, alignItems: 'center', justifyContent: 'center',
-                borderWidth: 2, borderColor: colors.card,
+                position: 'absolute', top: -4, right: -4,
+                backgroundColor: '#DC2626', borderRadius: 999,
+                minWidth: 16, height: 16, alignItems: 'center', justifyContent: 'center',
+                paddingHorizontal: 3, borderWidth: 1.5, borderColor: colors.card,
               }}>
-                <Text style={{ color: '#FFF', fontSize: 9, fontWeight: '800' }}>{unread}</Text>
+                <Text style={{ fontSize: 9, fontWeight: '700', color: '#FFF' }}>
+                  {unread > 9 ? '9+' : unread}
+                </Text>
               </View>
             )}
           </Pressable>
         </View>
-      </BlurView>
+      </View>
 
       {/* Active Drive Banner */}
       {activeDrive && (
@@ -258,7 +338,7 @@ export default function FeedScreen() {
           start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
           style={{
             flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-            paddingHorizontal: 20, paddingVertical: 12,
+            paddingHorizontal: 16, paddingVertical: 12,
           }}
         >
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -266,11 +346,11 @@ export default function FeedScreen() {
               width: 8, height: 8, borderRadius: 4,
               backgroundColor: inZone ? '#34D399' : '#FBBF24', marginRight: 8,
             }} />
-            <Text style={{ color: '#FFF', fontSize: 14, fontWeight: '700' }}>{activeDrive.driveName}</Text>
+            <Text style={{ color: '#FFF', fontSize: 15, fontWeight: '600' }}>{activeDrive.driveName}</Text>
           </View>
           <Text style={{
-            color: inZone ? '#FFF' : '#FBBF24', fontSize: 15,
-            fontFamily: 'monospace', fontWeight: '700',
+            color: inZone ? '#FFF' : '#FBBF24', fontSize: 13,
+            fontFamily: 'Courier', fontWeight: '700',
           }}>
             {formatTimer(timerSeconds)}{!inZone ? ' ⏸' : ''}
           </Text>
@@ -278,28 +358,22 @@ export default function FeedScreen() {
       )}
 
       {/* Filter Chips */}
-      <View style={{ flexDirection: 'row', paddingHorizontal: 20, paddingVertical: 12, gap: 10 }}>
+      <View style={{ flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 12, gap: 8 }}>
         {tabs.map((tab) => (
           <Pressable
             key={tab.key}
             onPress={() => setFeedTab(tab.key)}
             style={({ pressed }) => ({
-              paddingHorizontal: 18, height: 38, borderRadius: 9999,
-            backgroundColor: feedTab === tab.key ? colors.brand : 'rgba(255,255,255,0.5)',
-            alignItems: 'center', justifyContent: 'center',
-            flexDirection: 'row',
-            transform: [{ scale: pressed ? 0.95 : 1 }],
-            shadowColor: feedTab === tab.key ? colors.brand : 'transparent',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: feedTab === tab.key ? 0.3 : 0,
-            shadowRadius: 6,
-            borderWidth: feedTab === tab.key ? 0 : 1,
-            borderColor: 'rgba(255,255,255,0.6)',
+              paddingHorizontal: 16, height: 36, borderRadius: 999,
+              backgroundColor: feedTab === tab.key ? '#059669' : 'transparent',
+              alignItems: 'center', justifyContent: 'center',
+              transform: [{ scale: pressed ? 0.95 : 1 }],
+              borderWidth: feedTab === tab.key ? 0 : 1,
+              borderColor: colors.border,
             })}
           >
-            <Text style={{ fontSize: 13, marginRight: 4 }}>{tab.emoji}</Text>
             <Text style={{
-              fontSize: 13, fontWeight: '700',
+              fontSize: 13, fontWeight: '600',
               color: feedTab === tab.key ? '#FFF' : colors.inkMuted,
             }}>
               {tab.label}
@@ -311,65 +385,101 @@ export default function FeedScreen() {
       <FlatList
         data={filteredPosts}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ padding: 16 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.brand} />
         }
         ListHeaderComponent={
-          /* Stories Row */
-          <View style={{ marginBottom: 18 }}>
-            <Text style={{ fontSize: 13, fontWeight: '700', color: colors.inkMuted, marginBottom: 10, letterSpacing: 0.5 }}>
+          /* Stories Row — Instagram-style */
+          <View style={{ marginBottom: 16 }}>
+            <Text style={{
+              fontSize: 11, fontWeight: '600', color: colors.inkMuted,
+              marginBottom: 10, letterSpacing: 0.8, textTransform: 'uppercase',
+            }}>
               DRIVES NEAR YOU
             </Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {['Greenpeace', 'TeachForIndia', 'iVolunteer', 'NSS', 'Red Cross'].map((name, i) => {
-                const storyColours = ['#059669','#2563EB','#DC2626','#D97706','#0891B2'];
-                const bgColour = storyColours[name.charCodeAt(0) % storyColours.length];
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 14, paddingVertical: 4 }}
+            >
+              {STORIES.map((ngo, i) => {
+                const bgColor = storyColors[i % storyColors.length];
                 return (
-                <Pressable
-                  key={i}
-                  style={({ pressed }) => ({
-                    alignItems: 'center', marginRight: 16,
-                    transform: [{ scale: pressed ? 0.95 : 1 }],
-                  })}
-                >
-                  <LinearGradient
-                    colors={i === 0 ? ['#059669', '#34D399'] : [colors.border, colors.border]}
-                    style={{
-                      width: STORY_SIZE + 4, height: STORY_SIZE + 4, borderRadius: (STORY_SIZE + 4) / 2,
-                      alignItems: 'center', justifyContent: 'center',
-                    }}
+                  <Pressable
+                    key={i}
+                    style={({ pressed }) => ({
+                      alignItems: 'center', width: 72,
+                      transform: [{ scale: pressed ? 0.95 : 1 }],
+                    })}
                   >
+                    {/* Ring */}
                     <View style={{
-                      width: STORY_SIZE, height: STORY_SIZE, borderRadius: STORY_SIZE / 2,
-                      borderWidth: 2, borderColor: colors.card,
-                      overflow: 'hidden', backgroundColor: bgColour,
-                      alignItems: 'center', justifyContent: 'center',
+                      width: 68, height: 68, borderRadius: 34,
+                      borderWidth: 2.5,
+                      borderColor: ngo.status === 'live' ? '#059669' : colors.border,
+                      padding: 2, marginBottom: 6,
                     }}>
-                      <Text style={{ fontSize: 20, fontWeight: '700', color: '#FFFFFF' }}>
-                        {name.charAt(0)}
+                      <View style={{
+                        flex: 1, borderRadius: 999,
+                        backgroundColor: bgColor,
+                        alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        <Text style={{ fontSize: 22, fontWeight: '700', color: '#FFF' }}>
+                          {ngo.name[0]}
+                        </Text>
+                      </View>
+                    </View>
+                    <Text numberOfLines={1} style={{
+                      fontSize: 11, color: colors.inkLight,
+                      textAlign: 'center', width: 68,
+                    }}>
+                      {ngo.name}
+                    </Text>
+                    <View style={{
+                      marginTop: 3,
+                      paddingHorizontal: 6, paddingVertical: 2, borderRadius: 999,
+                      backgroundColor: ngo.status === 'live' ? '#059669' : colors.gray100,
+                    }}>
+                      <Text style={{
+                        fontSize: 9, fontWeight: '700',
+                        color: ngo.status === 'live' ? '#FFF' : colors.inkMuted,
+                        letterSpacing: 0.4,
+                      }}>
+                        {ngo.status === 'live' ? '● LIVE' : 'OPEN'}
                       </Text>
                     </View>
-                  </LinearGradient>
-                  <Text style={{ fontSize: 11, color: colors.ink, marginTop: 6, textAlign: 'center', fontWeight: '500' }}>
-                    {name.length > 10 ? name.slice(0, 9) + '…' : name}
-                  </Text>
-                  <View style={{
-                    paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6,
-                    backgroundColor: i === 0 ? '#059669' : colors.gray100, marginTop: 3,
-                  }}>
-                    <Text style={{ fontSize: 9, fontWeight: '800', color: i === 0 ? '#FFF' : colors.inkMuted }}>
-                      {i === 0 ? '🔴 LIVE' : 'OPEN'}
-                    </Text>
-                  </View>
-                </Pressable>
+                  </Pressable>
                 );
               })}
             </ScrollView>
           </View>
         }
-        renderItem={({ item }) => <PostCard post={item} colors={colors} />}
+        renderItem={({ item }) => (
+          <PostCard
+            post={item}
+            colors={colors}
+            darkMode={darkMode}
+            onRegister={handleRegister}
+            registeredDrives={registeredDrives}
+          />
+        )}
       />
+
+      {/* Toast */}
+      {toast.visible && (
+        <View style={{
+          position: 'absolute', bottom: 90, left: 16, right: 16,
+          backgroundColor: toast.bg, borderRadius: 12,
+          padding: 14, alignItems: 'center',
+          shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.15, shadowRadius: 8, elevation: 8,
+        }}>
+          <Text style={{ fontSize: 15, fontWeight: '600', color: toast.fg }}>
+            {toast.message}
+          </Text>
+        </View>
+      )}
     </SafeAreaView>
   );
 }

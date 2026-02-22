@@ -1,12 +1,24 @@
 import { Tabs } from "expo-router";
-import { Text, View, Platform } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuthStore } from "@/stores/authStore";
 import { useNotifStore } from "@/stores/notifStore";
 import { Colors } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
-import { BlurView } from "expo-blur";
+
+function TabIcon({ name, focusedName, focused, color }: {
+  name: string; focusedName: string; focused: boolean; color: string;
+}) {
+  return (
+    <View style={{ alignItems: 'center' }}>
+      {focused && (
+        <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: '#059669', marginBottom: 4 }} />
+      )}
+      <Ionicons name={(focused ? focusedName : name) as any} size={24} color={color} />
+    </View>
+  );
+}
 
 export default function VolunteerLayout() {
   const darkMode = useAuthStore((s) => s.darkMode);
@@ -19,36 +31,22 @@ export default function VolunteerLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarBackground: () => (
-          <BlurView
-            intensity={90}
-            tint={darkMode ? 'dark' : 'light'}
-            style={{
-              position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-            }}
-          />
-        ),
         tabBarStyle: {
-          position: 'absolute',
-          backgroundColor: 'transparent',
-          borderTopWidth: 0,
+          backgroundColor: colors.card,
+          borderTopWidth: StyleSheet.hairlineWidth,
+          borderTopColor: colors.border,
           height: 56 + insets.bottom,
           paddingBottom: insets.bottom,
+          paddingTop: 8,
           elevation: 0,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.06,
-          shadowRadius: 12,
+          shadowOpacity: 0,
         },
         tabBarActiveTintColor: '#059669',
         tabBarInactiveTintColor: '#9CA3AF',
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: '500',
-          marginTop: 4,
-        },
-        tabBarItemStyle: {
-          paddingTop: 8,
+          marginTop: 2,
         },
       }}
     >
@@ -56,12 +54,8 @@ export default function VolunteerLayout() {
         name="feed"
         options={{
           title: 'Feed',
-          tabBarIcon: ({ focused }) => (
-            <Ionicons
-              name={focused ? 'home' : 'home-outline'}
-              size={24}
-              color={focused ? '#059669' : '#9CA3AF'}
-            />
+          tabBarIcon: ({ focused, color }) => (
+            <TabIcon name="home-outline" focusedName="home" focused={focused} color={color} />
           ),
         }}
       />
@@ -69,12 +63,8 @@ export default function VolunteerLayout() {
         name="map"
         options={{
           title: 'Map',
-          tabBarIcon: ({ focused }) => (
-            <Ionicons
-              name={focused ? 'location' : 'location-outline'}
-              size={24}
-              color={focused ? '#059669' : '#9CA3AF'}
-            />
+          tabBarIcon: ({ focused, color }) => (
+            <TabIcon name="location-outline" focusedName="location" focused={focused} color={color} />
           ),
         }}
       />
@@ -82,23 +72,28 @@ export default function VolunteerLayout() {
         name="notifications"
         options={{
           title: 'Alerts',
-          tabBarIcon: ({ focused }) => (
-            <View>
-              <Ionicons
-                name={focused ? 'notifications' : 'notifications-outline'}
-                size={24}
-                color={focused ? '#059669' : '#9CA3AF'}
-              />
-              {unread > 0 && (
-                <View style={{
-                  position: 'absolute', top: -4, right: -8,
-                  backgroundColor: '#DC2626', borderRadius: 8,
-                  minWidth: 16, height: 16, alignItems: 'center', justifyContent: 'center',
-                  zIndex: 10,
-                }}>
-                  <Text style={{ color: '#FFF', fontSize: 9, fontWeight: '800' }}>{unread}</Text>
-                </View>
+          tabBarIcon: ({ focused, color }) => (
+            <View style={{ alignItems: 'center' }}>
+              {focused && (
+                <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: '#059669', marginBottom: 4 }} />
               )}
+              <View>
+                <Ionicons
+                  name={focused ? 'notifications' : 'notifications-outline'}
+                  size={24}
+                  color={color}
+                />
+                {unread > 0 && (
+                  <View style={{
+                    position: 'absolute', top: -4, right: -8,
+                    backgroundColor: '#DC2626', borderRadius: 999,
+                    minWidth: 16, height: 16, alignItems: 'center', justifyContent: 'center',
+                    paddingHorizontal: 3, borderWidth: 1.5, borderColor: colors.card,
+                  }}>
+                    <Text style={{ color: '#FFF', fontSize: 9, fontWeight: '700' }}>{unread > 9 ? '9+' : unread}</Text>
+                  </View>
+                )}
+              </View>
             </View>
           ),
         }}
@@ -107,12 +102,8 @@ export default function VolunteerLayout() {
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ focused }) => (
-            <Ionicons
-              name={focused ? 'person' : 'person-outline'}
-              size={24}
-              color={focused ? '#059669' : '#9CA3AF'}
-            />
+          tabBarIcon: ({ focused, color }) => (
+            <TabIcon name="person-outline" focusedName="person" focused={focused} color={color} />
           ),
         }}
       />
