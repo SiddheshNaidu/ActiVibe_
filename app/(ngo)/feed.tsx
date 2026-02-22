@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  View, Text, ScrollView, Pressable, Image, Dimensions,
+  View, Text, ScrollView, Pressable, Image, Dimensions, StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '@/stores/authStore';
@@ -8,7 +8,7 @@ import { useFeedStore } from '@/stores/feedStore';
 import { Colors } from '@/constants/theme';
 import { SEED_NGO_KPIS } from '@/data/seed';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
+import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 const KPI_WIDTH = (width - 52) / 2;
@@ -30,28 +30,19 @@ export default function NGOFeedScreen() {
 
   return (
     <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: colors.surface }}>
-      {/* Nav — Frosted Glass */}
-      <BlurView intensity={80} tint={darkMode ? 'dark' : 'light'} style={{
+      {/* Nav — Solid */}
+      <View style={{
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        paddingHorizontal: 20, paddingVertical: 14,
-        shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.04, shadowRadius: 8,
+        paddingHorizontal: 16, height: 52,
+        backgroundColor: colors.card,
+        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderBottomColor: colors.border,
       }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.brand, marginRight: 6 }} />
-          <Text style={{ fontSize: 22, fontWeight: '800', color: colors.brand, letterSpacing: -0.5 }}>ActiVibe</Text>
-        </View>
-        <Pressable
-          onPress={toggleDarkMode}
-          style={({ pressed }) => ({
-            width: 36, height: 36, borderRadius: 18,
-            backgroundColor: colors.gray100, alignItems: 'center', justifyContent: 'center',
-            transform: [{ scale: pressed ? 0.9 : 1 }],
-          })}
-        >
-          <Text style={{ fontSize: 16 }}>{darkMode ? '☀️' : '🌙'}</Text>
+        <Text style={{ fontSize: 22, fontWeight: '700', color: '#059669', letterSpacing: -0.5 }}>ActiVibe</Text>
+        <Pressable onPress={toggleDarkMode} hitSlop={12}>
+          <Ionicons name={darkMode ? 'sunny-outline' : 'moon-outline'} size={22} color={colors.inkMuted} />
         </Pressable>
-      </BlurView>
+      </View>
 
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
         {/* Welcome */}

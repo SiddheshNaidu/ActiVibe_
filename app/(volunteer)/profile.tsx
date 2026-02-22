@@ -44,27 +44,30 @@ function EndorsementCard({
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         style={{
-          width: ENDORSE_CARD_WIDTH, backgroundColor: colors.card, borderRadius: 18,
-          padding: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
+          flex: 1, backgroundColor: colors.card, borderRadius: 14,
+          padding: 14,
           borderWidth: 1, borderColor: colors.border,
+          gap: 8,
         }}
       >
         <View style={{
-          width: 44, height: 44, borderRadius: 14,
+          width: 44, height: 44, borderRadius: 22,
           backgroundColor: colors.brandLight,
-          alignItems: 'center', justifyContent: 'center', marginBottom: 10,
+          alignItems: 'center', justifyContent: 'center',
         }}>
-          <Text style={{ fontSize: 24 }}>{endorsement.emoji}</Text>
+          <Text style={{ fontSize: 22 }}>{endorsement.emoji}</Text>
         </View>
-        <Text style={{ fontSize: 14, fontWeight: '700', color: colors.ink }}>
+        <Text style={{ fontSize: 15, fontWeight: '600', color: colors.ink, marginTop: 2 }}>
           {endorsement.badgeName}
         </Text>
-        <Text style={{ fontSize: 12, color: colors.inkMuted, marginTop: 3 }}>
+        <Text style={{ fontSize: 12, color: colors.inkMuted }}>
           {endorsement.ngoName}
         </Text>
-        <Text style={{ fontSize: 10, color: colors.inkMuted, marginTop: 2 }}>
-          {endorsement.driveName} • {endorsement.date}
+        <Text style={{ fontSize: 11, color: colors.inkMuted }}>
+          {endorsement.driveName} · {endorsement.date}
+        </Text>
+        <Text style={{ fontSize: 11, color: '#059669', marginTop: 2 }}>
+          Tap to share →
         </Text>
       </Pressable>
     </Animated.View>
@@ -146,27 +149,32 @@ export default function ProfileScreen() {
               width: 36, height: 36, borderRadius: 18,
               backgroundColor: 'rgba(0,0,0,0.35)',
               alignItems: 'center', justifyContent: 'center',
-              transform: [{ scale: pressed ? 0.9 : 1 }],
+              transform: [{ scale: pressed ? 0.97 : 1 }],
             })}
           >
             <Text style={{ fontSize: 18, color: '#FFFFFF' }}>⚙️</Text>
           </Pressable>
+          {/* Gradient fade into surface */}
+          <LinearGradient
+            colors={['transparent', colors.surface]}
+            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 60 }}
+          />
         </LinearGradient>
 
         {/* Identity Row — fixed overlap by adding bg behind name */}
         <View style={{ backgroundColor: colors.surface }}>
-          <View style={{ paddingHorizontal: 20, marginTop: -44 }}>
+          <View style={{ paddingHorizontal: 16, marginTop: -40 }}>
             <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
-              <View style={{
-                width: 96, height: 96, borderRadius: 48, borderWidth: 4, borderColor: colors.surface,
-                overflow: 'hidden', backgroundColor: colors.card,
-                shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.15, shadowRadius: 8,
-              }}>
-                <Image source={{ uri: vol.avatarUrl }} style={{ width: 88, height: 88, borderRadius: 44 }} />
-              </View>
+              <Image
+                source={{ uri: vol.avatarUrl }}
+                style={{
+                  width: 80, height: 80, borderRadius: 40,
+                  borderWidth: 3, borderColor: colors.card,
+                  backgroundColor: colors.gray100,
+                }}
+              />
               <View style={{ flex: 1, marginLeft: 14, marginBottom: 8 }}>
-                <Text style={{ fontSize: 24, fontWeight: '800', color: colors.ink }}>{editName || vol.name}</Text>
+                <Text style={{ fontSize: 24, fontWeight: '700', color: colors.ink }}>{editName || vol.name}</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
                   <View style={{
                     backgroundColor: colors.brandLight, paddingHorizontal: 10, paddingVertical: 3, borderRadius: 9999,
@@ -204,21 +212,26 @@ export default function ProfileScreen() {
             </Text>
 
             <View style={{
-              flexDirection: 'row', marginTop: 18, gap: 20,
+              flexDirection: 'row', marginTop: 18,
               paddingTop: 16, borderTopWidth: 1, borderTopColor: colors.border,
             }}>
               {[
-                { value: vol.drivesCompleted, label: 'Drives', emoji: '🎯' },
-                { value: vol.endorsementCount, label: 'Endorsed', emoji: '⭐' },
-                { value: 'Mumbai', label: 'Location', emoji: '📍' },
-              ].map((stat, i) => (
-                <View key={i} style={{ alignItems: 'center', flex: 1 }}>
-                  <Text style={{ fontSize: 12, marginBottom: 4 }}>{stat.emoji}</Text>
-                  <Text style={{ fontSize: 20, fontWeight: '800', color: colors.ink }}>
-                    {stat.value}
-                  </Text>
-                  <Text style={{ fontSize: 11, color: colors.inkMuted, fontWeight: '500' }}>{stat.label}</Text>
-                </View>
+                { value: vol.drivesCompleted, label: 'Drives', icon: '🎯' },
+                { value: vol.endorsementCount, label: 'Endorsed', icon: '⭐' },
+                { value: 'Mumbai', label: 'Location', icon: '📍' },
+              ].map((stat, i, arr) => (
+                <React.Fragment key={i}>
+                  <View style={{ alignItems: 'center', flex: 1 }}>
+                    <Text style={{ fontSize: 16, color: '#059669', marginBottom: 4 }}>{stat.icon}</Text>
+                    <Text style={{ fontSize: 15, fontWeight: '700', color: colors.ink }}>
+                      {stat.value}
+                    </Text>
+                    <Text style={{ fontSize: 11, color: colors.inkMuted }}>{stat.label}</Text>
+                  </View>
+                  {i < arr.length - 1 && (
+                    <View style={{ height: 32, width: 1, backgroundColor: colors.border, alignSelf: 'center' }} />
+                  )}
+                </React.Fragment>
               ))}
             </View>
           </View>
@@ -275,26 +288,29 @@ export default function ProfileScreen() {
             Drive History
           </Text>
           {driveHistory.map((drive, i) => (
-            <View key={i} style={{
-              flexDirection: 'row', alignItems: 'center', paddingVertical: 14,
-              borderBottomWidth: i < driveHistory.length - 1 ? 1 : 0,
-              borderBottomColor: colors.border,
-            }}>
+            <View key={i}>
               <View style={{
-                width: 38, height: 38, borderRadius: 12,
-                backgroundColor: colors.brandLight,
-                alignItems: 'center', justifyContent: 'center', marginRight: 12,
+                flexDirection: 'row', alignItems: 'center', paddingVertical: 14,
               }}>
-                <Text style={{ fontSize: 16 }}>✅</Text>
+                <View style={{
+                  width: 40, height: 40, borderRadius: 20,
+                  backgroundColor: colors.brandLight,
+                  alignItems: 'center', justifyContent: 'center', marginRight: 12,
+                }}>
+                  <Text style={{ fontSize: 16 }}>✅</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 15, fontWeight: '500', color: colors.ink }}>{drive.name}</Text>
+                  <Text style={{ fontSize: 13, color: colors.inkMuted }}>{drive.ngo} · {drive.role}</Text>
+                </View>
+                <View style={{ alignItems: 'flex-end' }}>
+                  <Text style={{ fontSize: 15, fontWeight: '700', color: '#059669' }}>{drive.hours}</Text>
+                  <Text style={{ fontSize: 11, color: colors.inkMuted, textAlign: 'right' }}>{drive.date}</Text>
+                </View>
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 14, fontWeight: '700', color: colors.ink }}>{drive.name}</Text>
-                <Text style={{ fontSize: 12, color: colors.inkMuted }}>{drive.ngo} • {drive.role}</Text>
-              </View>
-              <View style={{ alignItems: 'flex-end' }}>
-                <Text style={{ fontSize: 15, fontWeight: '800', color: '#059669' }}>{drive.hours}</Text>
-                <Text style={{ fontSize: 10, color: colors.inkMuted }}>{drive.date}</Text>
-              </View>
+              {i < driveHistory.length - 1 && (
+                <View style={{ height: 1, backgroundColor: colors.border, marginLeft: 56 }} />
+              )}
             </View>
           ))}
         </View>

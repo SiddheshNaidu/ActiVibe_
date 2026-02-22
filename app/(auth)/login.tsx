@@ -9,7 +9,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { Colors } from '@/constants/theme';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
-  useSharedValue, useAnimatedStyle, withSpring, Easing,
+  useSharedValue, useAnimatedStyle, withSpring,
 } from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
@@ -251,9 +251,9 @@ export default function LoginScreen() {
               onPress={handleSubmit}
               disabled={!isValid || loading}
               style={({ pressed }) => ({
-                borderRadius: 18, overflow: 'hidden',
+                borderRadius: 14, overflow: 'hidden',
                 opacity: !isValid || loading ? 0.4 : 1,
-                transform: [{ scale: pressed && isValid ? 0.96 : 1 }],
+                transform: [{ scale: pressed && isValid ? 0.97 : 1 }],
                 shadowColor: '#059669', shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: isValid ? 0.3 : 0,
                 shadowRadius: 12, elevation: isValid ? 4 : 0,
@@ -263,10 +263,10 @@ export default function LoginScreen() {
                 colors={['#059669', '#10B981']}
                 start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
                 style={{
-                  height: 54, alignItems: 'center', justifyContent: 'center',
+                  height: 52, alignItems: 'center', justifyContent: 'center',
                 }}
               >
-                <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '700' }}>
+                <Text style={{ color: '#FFF', fontSize: 15, fontWeight: '600' }}>
                   {loading ? '⏳ Signing in...' : (isSignUp ? 'Create Account' : 'Sign In →')}
                 </Text>
               </LinearGradient>
