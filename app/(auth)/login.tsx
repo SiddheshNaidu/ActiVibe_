@@ -1,0 +1,235 @@
+import React, { useState } from 'react';
+import {
+  View, Text, TextInput, Pressable, SafeAreaView, ScrollView,
+  KeyboardAvoidingView, Platform, Dimensions,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { useAuthStore } from '@/stores/authStore';
+import { Colors } from '@/constants/theme';
+import { LinearGradient } from 'expo-linear-gradient';
+
+const { width } = Dimensions.get('window');
+
+export default function LoginScreen() {
+  const router = useRouter();
+  const darkMode = useAuthStore((s) => s.darkMode);
+  const user = useAuthStore((s) => s.user);
+  const loginAsVolunteer = useAuthStore((s) => s.loginAsVolunteer);
+  const loginAsNGO = useAuthStore((s) => s.loginAsNGO);
+  const colors = darkMode ? Colors.dark : Colors.light;
+
+  const [role, setRole] = useState<'volunteer' | 'ngo'>(user?.role || 'volunteer');
+  const [email, setEmail] = useState('demo@activibe.com');
+  const [password, setPassword] = useState('demo123');
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const isValid = email.includes('@') && password.length >= 6 && (!isSignUp || password === confirmPassword);
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    await new Promise((r) => setTimeout(r, 800));
+    
+    if (role === 'volunteer') {
+      loginAsVolunteer();
+      router.replace('/(auth)/onboarding');
+    } else {
+      loginAsNGO();
+      router.replace('/(auth)/ngo-register');
+    }
+    setLoading(false);
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.surface }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}>
+          {/* Header */}
+          <View style={{ alignItems: 'center', marginBottom: 36 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+              <View style={{
+                width: 10, height: 10, borderRadius: 5,
+                backgroundColor: colors.brand, marginRight: 6,
+              }} />
+              <Text style={{ fontSize: 32, fontWeight: '800', color: colors.ink, letterSpacing: -0.5 }}>
+                ActiVibe
+              </Text>
+            </View>
+            <Text style={{ fontSize: 16, color: colors.inkMuted, marginTop: 4 }}>
+              {isSignUp ? 'Create your account' : 'Welcome back'}
+            </Text>
+          </View>
+
+          {/* Auth Card */}
+          <View style={{
+            backgroundColor: colors.card, borderRadius: 24,
+            padding: 24, shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08,
+            shadowRadius: 16, elevation: 4,
+            borderWidth: 1, borderColor: colors.border,
+          }}>
+            {/* Role Selector */}
+            <Text style={{ fontSize: 13, fontWeight: '700', color: colors.inkLight, marginBottom: 8 }}>
+              I am a…
+            </Text>
+            <View style={{
+              flexDirection: 'row', backgroundColor: colors.gray100,
+              borderRadius: 14, padding: 4, marginBottom: 24,
+            }}>
+              {(['volunteer', 'ngo'] as const).map((r) => (
+                <Pressable
+                  key={r}
+                  onPress={() => setRole(r)}
+                  style={({ pressed }) => ({
+                    flex: 1, height: 44, borderRadius: 12,
+                    backgroundColor: role === r ? colors.brand : 'transparent',
+                    alignItems: 'center', justifyContent: 'center',
+                    transform: [{ scale: pressed ? 0.97 : 1 }],
+                    shadowColor: role === r ? colors.brand : 'transparent',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: role === r ? 0.3 : 0,
+                    shadowRadius: 6,
+                  })}
+                >
+                  <Text style={{
+                    fontSize: 14, fontWeight: '700',
+                    color: role === r ? '#FFF' : colors.inkMuted,
+                  }}>
+                    {r === 'volunteer' ? '🙋 Volunteer' : '🏢 NGO'}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+
+            {/* Google Sign-In Button */}
+            <Pressable
+              onPress={handleSubmit}
+              style={({ pressed }) => ({
+                height: 54, borderRadius: 16, borderWidth: 1.5, borderColor: colors.border,
+                backgroundColor: colors.card, flexDirection: 'row',
+                alignItems: 'center', justifyContent: 'center',
+                transform: [{ scale: pressed ? 0.97 : 1 }],
+              })}
+            >
+              <Text style={{ fontSize: 22, marginRight: 10 }}>🔵</Text>
+              <Text style={{ fontSize: 15, fontWeight: '600', color: colors.ink }}>
+                Continue with Google
+              </Text>
+            </Pressable>
+
+            {/* OR Divider */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 22 }}>
+              <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
+              <Text style={{ marginHorizontal: 14, fontSize: 12, color: colors.inkMuted, fontWeight: '500' }}>or</Text>
+              <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
+            </View>
+
+            {/* Email */}
+            <Text style={{ fontSize: 12, fontWeight: '700', color: colors.inkLight, marginBottom: 6 }}>Email</Text>
+            <TextInput
+              value={email}
+              onChangeText={setEmail}
+              placeholder="you@example.com"
+              placeholderTextColor={colors.inkMuted}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              style={{
+                height: 52, borderRadius: 14, borderWidth: 1.5, borderColor: colors.border,
+                paddingHorizontal: 16, fontSize: 15, color: colors.ink,
+                backgroundColor: colors.gray100, marginBottom: 14,
+              }}
+            />
+
+            {/* Password */}
+            <Text style={{ fontSize: 12, fontWeight: '700', color: colors.inkLight, marginBottom: 6 }}>Password</Text>
+            <View style={{ position: 'relative', marginBottom: isSignUp ? 14 : 22 }}>
+              <TextInput
+                value={password}
+                onChangeText={setPassword}
+                placeholder="••••••"
+                placeholderTextColor={colors.inkMuted}
+                secureTextEntry={!showPassword}
+                style={{
+                  height: 52, borderRadius: 14, borderWidth: 1.5, borderColor: colors.border,
+                  paddingHorizontal: 16, paddingRight: 48, fontSize: 15, color: colors.ink,
+                  backgroundColor: colors.gray100,
+                }}
+              />
+              <Pressable
+                onPress={() => setShowPassword(!showPassword)}
+                style={{ position: 'absolute', right: 14, top: 14 }}
+              >
+                <Text style={{ fontSize: 18 }}>{showPassword ? '🙈' : '👁️'}</Text>
+              </Pressable>
+            </View>
+
+            {/* Confirm Password (sign up only) */}
+            {isSignUp && (
+              <>
+                <Text style={{ fontSize: 12, fontWeight: '700', color: colors.inkLight, marginBottom: 6 }}>
+                  Confirm Password
+                </Text>
+                <TextInput
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  placeholder="••••••"
+                  placeholderTextColor={colors.inkMuted}
+                  secureTextEntry
+                  style={{
+                    height: 52, borderRadius: 14, borderWidth: 1.5,
+                    borderColor: confirmPassword && password !== confirmPassword ? '#DC2626' : colors.border,
+                    paddingHorizontal: 16, fontSize: 15, color: colors.ink,
+                    backgroundColor: colors.gray100, marginBottom: 22,
+                  }}
+                />
+                {confirmPassword && password !== confirmPassword && (
+                  <Text style={{ fontSize: 11, color: '#DC2626', marginTop: -18, marginBottom: 16 }}>
+                    Passwords don't match
+                  </Text>
+                )}
+              </>
+            )}
+
+            {/* Submit Button — Gradient */}
+            <Pressable
+              onPress={handleSubmit}
+              disabled={!isValid || loading}
+              style={({ pressed }) => ({
+                borderRadius: 18, overflow: 'hidden',
+                opacity: !isValid || loading ? 0.4 : 1,
+                transform: [{ scale: pressed && isValid ? 0.96 : 1 }],
+                shadowColor: '#059669', shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: isValid ? 0.3 : 0,
+                shadowRadius: 12, elevation: isValid ? 4 : 0,
+              })}
+            >
+              <LinearGradient
+                colors={['#059669', '#10B981']}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                style={{
+                  height: 54, alignItems: 'center', justifyContent: 'center',
+                }}
+              >
+                <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '700' }}>
+                  {loading ? '⏳ Signing in...' : (isSignUp ? 'Create Account' : 'Sign In →')}
+                </Text>
+              </LinearGradient>
+            </Pressable>
+
+            {/* Toggle Mode */}
+            <Pressable onPress={() => setIsSignUp(!isSignUp)} style={{ marginTop: 18, alignItems: 'center' }}>
+              <Text style={{ fontSize: 14, color: colors.brand, fontWeight: '500' }}>
+                {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
+              </Text>
+            </Pressable>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
